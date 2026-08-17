@@ -1,0 +1,26 @@
+{
+  "name": "midnight-verify",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Midnight Verify — Prove eligibility. Reveal nothing else.",
+  "workspaces": [
+    "contract",
+    "api",
+    "frontend",
+    "deploy"
+  ],
+  "scripts": {
+    "compact:wsl": "wsl -d Ubuntu -- bash -c \"~/.local/bin/compact compile '/mnt/d/Midnight Verify/contract/src/age_verify.compact' '/mnt/d/Midnight Verify/contract/src/managed/age_verify'\"",
+    "build": "npm run build --workspace=frontend",
+    "test": "npm run test --workspace=contract",
+    "test:run": "npm run test:run --workspace=contract",
+    "test:sim": "npm run test:run:sim --workspace=contract",
+    "dev": "npm run dev --workspace=frontend",
+    "deploy": "npm run deploy:ts --workspace=deploy",
+    "clean": "npm run clean --workspace=contract ; npm run clean --workspace=api ; npm run clean --workspace=frontend"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "npm@10.0.0"
+}

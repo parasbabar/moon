@@ -1,0 +1,49 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.ambientBg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ambientOrb1 {
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: min(60vw, 700px);
+  height: min(60vw, 700px);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124, 95, 230, 0.055) 0%, transparent 70%);
+}
+
+.ambientOrb2 {
+  position: absolute;
+  bottom: -20%;
+  left: -10%;
+  width: min(50vw, 600px);
+  height: min(50vw, 600px);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.03) 0%, transparent 70%);
+}
+
+.main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(40px, 6vw, 72px);
+  padding: clamp(24px, 4vw, 56px) clamp(16px, 4vw, 24px);
+  padding-bottom: clamp(40px, 6vw, 80px);
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}

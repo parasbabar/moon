@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌙 Midnight Verify — Secure Contract Deployment</title>
+    <style>
+        :root {
+            --midnight-purple: #8a6eff;
+            --midnight-dark: #0a0a0f;
+            --midnight-darker: #151522;
+            --midnight-border: #2a2a3a;
+            --text-primary: #e0e0ff;
+            --text-secondary: #a0a0cc;
+            --success: #80ffa0;
+            --warning: #ffcc80;
+            --error: #ff8080;
+            --info: #80c0ff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--midnight-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            border-bottom: 1px solid var(--midnight-border);
+        }
+        
+        h1 {
+            color: var(--midnight-purple);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: var(--midnight-darker);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--midnight-border);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: var(--midnight-purple);
+        }
+        
+        .card h2 {
+            color: var(--midnight-purple);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: var(--midnight-purple);
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .status.connected {
+            background: rgba(128, 255, 160, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+        
+        .status.error {
+            background: rgba(255, 128, 128, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+        
+        .status.processing {
+            background: rgba(128, 192, 255, 0.1);
+            border: 1px solid var(--info);
+            color: var(--info);
+        }
+        
+        .status.info {
+            background: rgba(255, 204, 128, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+        
+        button {
+            background: var(--midnight-purple);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        button:hover:not(:disabled) {
+            background: #9a7eff;
+            transform: translateY(-1px);
+        }
+        
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: var(--midnight-border);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--midnight-border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--midnight-purple);
+        }
+        
+        .result-box {
+            background: rgba(42, 58, 74, 0.3);
+            border: 1px solid var(--midnight-border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+        
+        .result-box.success {
+            border-color: var(--success);
+            background: rgba(128, 255, 160, 0.05);
+        }
+        
+        .result-title {
+            color: var(--midnight-purple);
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .result-value {
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid;
+        }
+        
+        .alert.info {
+            background: rgba(128, 192, 255, 0.1);
+            border-left-color: var(--info);
+            color: var(--info);
+        }
+        
+        .alert.warning {
+            background: rgba(255, 204, 128, 0.1);
+            border-left-color: var(--warning);
+            color: var(--warning);
+        }
+        
+        .alert.success {
+            background: rgba(128, 255, 160, 0.1);
+            border-left-color: var(--success);
+            color: var(--success);
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: var(--midnight-border);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--midnight-purple);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .icon {
+            font-size: 1.2rem;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--midnight-border);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(128, 255, 160, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 20px;
+            color: var(--success);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin: 10px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                <span class="icon">🌙</span>
+                Midnight Verify — Secure Deployment
+            </h1>
+            <p class="subtitle">
+                Deploy AgeVerify contract to Preprod using your Lace wallet.
+                No seed phrase required. Your private keys stay secure in Lace.
+            </p>
+            <div class="security-badge">
+                <span class="icon">🔒</span>
+                No seed exposure • Lace-managed keys • Secure deployment
+            </div>
+        </header>
+        
+        <div class="card">
+            <h2><span class="step-number">1</span> Connect Lace Wallet</h2>
+            <p>Make sure Lace wallet extension is installed and unlocked on Preprod network.</p>
+            <button id="connectBtn">
+                <span class="icon">🔗</span>
+                Connect Lace Wallet
+            </button>
+            <div id="connectStatus" class="status"></div>
+        </div>
+        
+        <div class="card">
+            <h2><span class="step-number">2</span> Configure Deployment</h2>
+            <div class="form-group">
+                <label for="threshold">Eligibility Threshold:</label>
+                <input type="number" id="threshold" value="18" min="1" max="255">
+                <small>The minimum age required for verification (public ledger value).</small>
+            </div>
+            
+            <div class="alert info">
+                <strong>Network Configuration:</strong><br>
+                • Network: <strong>Preprod</strong><br>
+                • Proof Server: <strong id="proofServerStatus">Checking...</strong><br>
+                • Indexer: <strong id="indexerStatus">Checking...</strong>
+            </div>
+            
+            <button id="checkConfigBtn" disabled>
+                <span class="icon">✅</span>
+                Verify Configuration
+            </button>
+            <div id="configStatus" class="status"></div>
+        </div>
+        
+        <div class="card">
+            <h2><span class="step-number">3</span> Deploy Contract</h2>
+            <p>Deploy AgeVerify contract to Midnight Preprod. This will:</p>
+            <ul style="margin: 15px 0 20px 30px; color: var(--text-secondary);">
+                <li>Generate ZK proof (takes 30-90 seconds)</li>
+                <li>Submit deployment transaction</li>
+                <li>Wait for confirmation</li>
+                <li>Store contract address</li>
+            </ul>
+            
+            <div class="alert warning">
+                <strong>Important:</strong> Lace will automatically handle DUST requirements during transaction balancing.
+                If DUST is needed, Lace will generate it as part of the transaction flow.
+            </div>
+            
+            <button id="deployBtn" disabled>
+                <span class="icon">🚀</span>
+                Deploy Contract to Preprod
+            </button>
+            <div id="deployStatus" class="status"></div>
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2><span class="step-number">4</span> Deployment Result</h2>
+            <div id="resultContainer">
+                <div class="alert info">
+                    Deployment results will appear here after successful contract deployment.
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2><span class="step-number">5</span> Next Steps</h2>
+            <div id="nextSteps">
+                <p>After successful deployment:</p>
+                <ol style="margin: 15px 0 20px 30px; color: var(--text-secondary);">
+                    <li>Update frontend with contract address</li>
+                    <li>Rebuild frontend</li>
+                    <li>Test verification flow with real contract</li>
+                </ol>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Midnight Verify — Prove eligibility. Reveal nothing else.</p>
+            <p>Secure browser deployment • Lace DApp Connector • No seed exposure</p>
+        </footer>
+    </div>
+
+    <script type="module">
+        import { deployContractBrowser, testLaceConnectionBrowser, checkPrerequisitesBrowser } from './deploy-browser.js';
+        
+        // DOM Elements
+        const connectBtn = document.getElementById('connectBtn');
+        const checkConfigBtn = document.getElementById('checkConfigBtn');
+        const deployBtn = document.getElementById('deployBtn');
+        const connectStatus = document.getElementById('connectStatus');
+        const configStatus = document.getElementById('configStatus');
+        const deployStatus = document.getElementById('deployStatus');
+        const resultContainer = document.getElementById('resultContainer');
+        const nextSteps = document.getElementById('nextSteps');
+        const progressFill = document.getElementById('progressFill');
+        const proofServerStatus = document.getElementById('proofServerStatus');
+        const indexerStatus = document.getElementById('indexerStatus');
+        const thresholdInput = document.getElementById('threshold');
+        
+        let laceApi = null;
+        let walletConnected = false;
+        
+        // Update status helper
+        function updateStatus(element, text, className = '') {
+            element.textContent = text;
+            element.className = 'status ' + className;
+        }
+        
+        // Update progress bar
+        function updateProgress(percent) {
+            progressFill.style.width = percent + '%';
+        }
+        
+        // Check proof server status
+        async function checkProofServer() {
+            try {
+                const response = await fetch('http://localhost:6300', {
+                    method: 'HEAD',
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+                proofServerStatus.textContent = 'Connected';
+                proofServerStatus.style.color = 'var(--success)';
+                return true;
+            } catch (error) {
+                proofServerStatus.textContent = 'Not running - start Docker';
+                proofServerStatus.style.color = 'var(--error)';
+                return false;
+            }
+        }
+        
+        // Check indexer status
+        async function checkIndexer() {
+            try {
+                const response = await fetch('https://indexer.preprod.midnight.network/api/v4/graphql', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: '{ __typename }' }),
+                    mode: 'cors'
+                });
+                indexerStatus.textContent = 'Connected';
+                indexerStatus.style.color = 'var(--success)';
+                return true;
+            } catch (error) {
+                indexerStatus.textContent = 'Connection error';
+                indexerStatus.style.color = 'var(--error)';
+                return false;
+            }
+        }
+        
+        // Check all configuration
+        async function checkConfiguration() {
+            updateStatus(configStatus, 'Checking configuration...', 'processing');
+            
+            const prerequisites = await checkPrerequisitesBrowser();
+            
+            if (prerequisites.allOk) {
+                let statusText = '✅ Configuration verified:\n';
+                statusText += `• Lace wallet: ${prerequisites.results.laceWallet.message}\n`;
+                statusText += `• Proof server: ${prerequisites.results.proofServer.message}\n`;
+                statusText += `• Contract artifact: ${prerequisites.results.contractArtifact.message}\n`;
+                statusText += `• Preprod indexer: ${prerequisites.results.indexer.message}\n`;
+                statusText += `• Network: Preprod`;
+                
+                if (prerequisites.readyForDeployment) {
+                    statusText += '\n• ✅ Ready for REAL deployment!';
+                    deployBtn.disabled = false;
+                } else {
+                    statusText += '\n• ⚠️ Check wallet balance (need ≥1000 tNIGHT)';
+                    deployBtn.disabled = true;
+                }
+                
+                updateStatus(configStatus, statusText, 'connected');
+                return prerequisites.allOk;
+            } else {
+                let statusText = '⚠️ Configuration issues detected:\n';
+                Object.entries(prerequisites.results).forEach(([key, result]) => {
+                    statusText += `• ${key}: ${result.message}\n`;
+                });
+                
+                if (prerequisites.recommendations.length > 0) {
+                    statusText += '\nRecommendations:\n';
+                    prerequisites.recommendations.forEach(rec => {
+                        statusText += `• ${rec}\n`;
+                    });
+                }
+                
+                updateStatus(configStatus, statusText, 'error');
+                deployBtn.disabled = true;
+                return false;
+            }
+        }
+        
+        // Step 1: Connect Lace Wallet
+        connectBtn.addEventListener('click', async () => {
+            updateStatus(connectStatus, 'Connecting to Lace wallet...', 'processing');
+            
+            try {
+                // Test Lace connection using browser function
+                const connectionResult = await testLaceConnectionBrowser();
+                
+                if (!connectionResult.connected) {
+                    throw new Error(connectionResult.error || 'Lace wallet not detected. Make sure:\n1. Lace extension is installed\n2. Lace is unlocked\n3. Refresh page after unlocking');
+                }
+                
+                // Display connected wallet info
+                const displayAddress = connectionResult.addresses.bech32Unshielded;
+                const tNIGHT = connectionResult.balances?.tNIGHT || 0;
+                const tDUST = connectionResult.balances?.tDUST || 0;
+                
+                updateStatus(connectStatus, 
+                    `✅ Connected to Lace wallet\n` +
+                    `• Network: ${connectionResult.network}\n` +
+                    `• Address: ${displayAddress.slice(0, 20)}…${displayAddress.slice(-10)}\n` +
+                    `• Balance: ${tNIGHT} tNIGHT, ${tDUST} tDUST\n` +
+                    `• Ready for deployment`, 
+                    'connected');
+                
+                walletConnected = true;
+                connectBtn.disabled = true;
+                checkConfigBtn.disabled = false;
+                
+                // Check configuration
+                await checkConfiguration();
+                
+            } catch (error) {
+                updateStatus(connectStatus, `❌ Connection failed:\n${error.message}`, 'error');
+                console.error('Lace connection error:', error);
+            }
+        });
+        
+        // Step 2: Check Configuration
+        checkConfigBtn.addEventListener('click', async () => {
+            await checkConfiguration();
+        });
+        
+        // Step 3: Deploy Contract
+        deployBtn.addEventListener('click', async () => {
+            const threshold = parseInt(thresholdInput.value) || 18;
+            
+            if (!laceApi || !walletConnected) {
+                updateStatus(deployStatus, '❌ Wallet not connected', 'error');
+                return;
+            }
+            
+            updateStatus(deployStatus, 'Starting deployment...', 'processing');
+            updateProgress(5);
+            
+            try {
+                deployBtn.disabled = true;
+                
+                // Status callback for deployment progress
+                const onStatus = (status, percent) => {
+                    updateStatus(deployStatus, `Deployment: ${status}`, 'processing');
+                    updateProgress(percent);
+                };
+                
+                // Deploy contract
+                onStatus('Initializing deployment', 10);
+                
+                const result = await deployContractBrowser({
+                    threshold: BigInt(threshold),
+                    onStatus
+                });
+                
+                updateStatus(deployStatus, '✅ Contract deployed successfully!', 'connected');
+                updateProgress(100);
+                
+                // Show REAL deployment result
+                resultContainer.innerHTML = `
+                    <div class="result-box success">
+                        <div class="result-title">🎉 REAL Contract Deployment Complete!</div>
+                        <div class="result-value">
+                            <strong>Contract Address:</strong><br>
+                            <code>${result.contractAddress}</code><br><br>
+                            <strong>Transaction Hash:</strong><br>
+                            <code style="font-size: 0.9rem;">${result.transactionHash}</code><br><br>
+                            <strong>Network:</strong> ${result.network}<br>
+                            <strong>Threshold:</strong> ${threshold}+<br>
+                            <strong>Status:</strong> Successfully deployed and confirmed<br><br>
+                            <strong>Note:</strong> ${result.note || '✅ REAL contract deployed to Midnight Preprod!'}
+                        </div>
+                    </div>
+                `;
+                
+                // Update next steps for REAL deployment
+                nextSteps.innerHTML = `
+                    <p>✅ REAL contract deployed successfully to Midnight Preprod!</p>
+                    <p>Next steps to complete Midnight Verify:</p>
+                    <ol style="margin: 15px 0 20px 30px; color: var(--text-secondary);">
+                        <li><strong>Update frontend configuration:</strong><br>
+                            Add to <code>.env</code>:<br>
+                            <code>VITE_CONTRACT_ADDRESS=${result.contractAddress}</code>
+                        </li>
+                        <li><strong>Rebuild frontend:</strong><br>
+                            Run: <code>npm run build</code> in frontend directory
+                        </li>
+                        <li><strong>Test REAL verification flow:</strong><br>
+                            Open frontend, connect Lace wallet, verify eligibility with REAL contract
+                        </li>
+                        <li><strong>Run all tests:</strong><br>
+                            Ensure all 18 tests still pass after deployment
+                        </li>
+                        <li><strong>Complete documentation:</strong><br>
+                            Update README with real contract address
+                        </li>
+                    </ol>
+                    <div class="alert success">
+                        <strong>✅ REAL deployment successful!</strong> The AgeVerify contract is now live on Midnight Preprod.
+                    </div>
+                `;
+                
+                // Create download link for .env update
+                const envContent = `VITE_CONTRACT_ADDRESS=${result.contractAddress}\nVITE_MIDNIGHT_NETWORK=preprod\n`;
+                const blob = new Blob([envContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                
+                const downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                downloadLink.download = '.env-contract.txt';
+                downloadLink.textContent = '📥 Download updated .env file';
+                downloadLink.style.cssText = `
+                    display: inline-block;
+                    margin: 15px 0;
+                    padding: 12px 20px;
+                    background: var(--midnight-purple);
+                    color: white;
+                    border-radius: 6px;
+                    text-decoration: none;
+                    font-weight: 600;
+                `;
+                
+                resultContainer.appendChild(downloadLink);
+                
+                // Add verification info if available
+                if (result.contractInfo) {
+                    const verificationDiv = document.createElement('div');
+                    verificationDiv.className = 'alert info';
+                    verificationDiv.style.marginTop = '15px';
+                    
+                    if (result.contractInfo.verified) {
+                        verificationDiv.innerHTML = `
+                            <strong>✅ Contract verified via Preprod indexer:</strong><br>
+                            • Contract ID: ${result.contractInfo.data?.id || 'Not found'}<br>
+                            • Deployer: ${result.contractInfo.data?.deployer?.slice(0, 20) || 'Unknown'}...<br>
+                            • Network: ${result.contractInfo.data?.network || 'preprod'}
+                        `;
+                    } else {
+                        verificationDiv.innerHTML = `
+                            <strong>⚠️ Indexer verification pending:</strong><br>
+                            ${result.contractInfo.error || 'Contract may take a few minutes to appear in indexer'}
+                        `;
+                    }
+                    
+                    resultContainer.appendChild(verificationDiv);
+                }
+                
+            } catch (error) {
+                updateStatus(deployStatus, `❌ Deployment failed:\n${error.message}`, 'error');
+                updateProgress(0);
+                deployBtn.disabled = false;
+                console.error('Deployment error:', error);
+                
+                resultContainer.innerHTML = `
+                    <div class="alert error" style="background: rgba(255, 128, 128, 0.1); border-left-color: var(--error); color: var(--error);">
+                        <strong>Deployment Failed</strong><br>
+                        ${error.message}<br><br>
+                        Common issues:<br>
+                        • Proof server not running (start Docker)<br>
+                        • Lace wallet DUST generation required<br>
+                        • Network connectivity issues<br>
+                        • Insufficient tNIGHT balance
+                    </div>
+                `;
+            }
+        });
+        
+        // Initial configuration check
+        window.addEventListener('load', async () => {
+            // Check proof server and update status
+            try {
+                const proofResponse = await fetch('http://localhost:6300', { method: 'HEAD' });
+                proofServerStatus.textContent = 'Connected';
+                proofServerStatus.style.color = 'var(--success)';
+            } catch (error) {
+                proofServerStatus.textContent = 'Not running - start Docker';
+                proofServerStatus.style.color = 'var(--error)';
+            }
+            
+            // Check indexer
+            try {
+                const indexerResponse = await fetch('https://indexer.preprod.midnight.network/api/v4/graphql', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: '{ __typename }' }),
+                    mode: 'cors'
+                });
+                indexerStatus.textContent = 'Connected';
+                indexerStatus.style.color = 'var(--success)';
+            } catch (error) {
+                indexerStatus.textContent = 'Connection error';
+                indexerStatus.style.color = 'var(--error)';
+            }
+        });
+    </script>
+</body>
+</html>

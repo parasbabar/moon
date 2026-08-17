@@ -1,0 +1,40 @@
+# Midnight Verify — Local Proof Server (Docker Compose)
+#
+# The proof server generates ZK proofs locally before submitting transactions.
+# Private data (age) never leaves this machine — only the proof goes on-chain.
+#
+# IMAGE: midnightntwrk/proof-server:8.1.0
+#   Compatible with: compactc 0.31.0 / ledger 8.0.2 / compact-runtime 0.16.0
+#
+# FIRST START: downloads ~200MB of ZK public parameters from srs.midnight.network.
+# These are cached in the named volume 'proof-server-data' and reused on restart.
+#
+# Start:   docker compose -f docker/proof-server.yml up -d
+# Stop:    docker compose -f docker/proof-server.yml down
+# Logs:    docker compose -f docker/proof-server.yml logs -f
+# Status:  curl http://localhost:6300/status
+#
+# After starting, confirm it is ready:
+#   docker compose -f docker/proof-server.yml logs -f
+#   (wait for "actix-web-service... listening on: 0.0.0.0:6300")
+
+services:
+  proof-server:
+    image: midnightntwrk/proof-server:8.1.0
+    container_name: midnight-verify-proof-server
+    ports:
+      - "6300:6300"
+    volumes:
+      # Persist downloaded ZK parameters — avoids re-downloading on every restart
+      - proof-server-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:6300/status || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 120s   # First start downloads ~200MB — give it time
+
+volumes:
+  proof-server-data:
+    driver: local

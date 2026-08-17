@@ -1,0 +1,31 @@
+{
+  "name": "@midnight-verify/deploy",
+  "version": "1.0.0",
+  "description": "Midnight Verify — Preprod deployment scripts",
+  "type": "module",
+  "scripts": {
+    "deploy": "tsx src/deploy-real.ts",
+    "deploy:prepare": "tsx src/deploy-real.ts --prepare",
+    "wallet:address": "tsx src/wallet-address.ts",
+    "check:prerequisites": "tsx src/deploy-real.ts --check"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/compact-js": "2.5.1",
+    "@midnight-ntwrk/compact-runtime": "0.16.0",
+    "@midnight-ntwrk/midnight-js-contracts": "4.1.1",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-node-zk-config-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-types": "4.1.1",
+    "@midnight-ntwrk/testkit-js": "4.1.1",
+    "@midnight-ntwrk/wallet-sdk": "1.1.0",
+    "@midnight-verify/contract": "1.0.0",
+    "effect": "^3.22.1"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "tsx": "^4.23.12",
+    "typescript": "^5.8.3"
+  }
+}

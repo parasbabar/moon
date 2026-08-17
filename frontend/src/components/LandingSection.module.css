@@ -1,0 +1,231 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(20px, 3vw, 28px);
+  padding-top: clamp(16px, 3vw, 32px);
+  animation: fadeIn 0.5s ease both;
+  width: 100%;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Moon visual ---- */
+.moonWrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.moonRing {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1px solid rgba(124, 95, 230, 0.15);
+  animation: moonGlow 4s ease-in-out infinite;
+}
+
+.moon {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1.5px solid rgba(124, 95, 230, 0.35);
+}
+
+.moonHalfDark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, #0e0e1a, #131320);
+}
+
+.moonHalfLight {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    #a584f5 0%,
+    #7c5fe6 40%,
+    #4f3db3 100%
+  );
+  opacity: 0.88;
+}
+
+.moonGlow {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 70%;
+  background: radial-gradient(ellipse, rgba(124, 95, 230, 0.35) 0%, transparent 70%);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+@keyframes moonGlow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.04); }
+}
+
+/* ---- Wordmark ---- */
+.wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 520px;
+}
+
+.wordmarkLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--brand-core);
+  text-transform: uppercase;
+}
+
+.tagline {
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--text-primary);
+}
+
+.taglineAccent {
+  color: var(--brand-light);
+}
+
+.description {
+  font-size: clamp(0.95rem, 2vw, 1.05rem);
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* ---- Threshold badge ---- */
+.thresholdBadge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-lg);
+  padding: 14px 32px;
+}
+
+.thresholdLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.thresholdValue {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--brand-light);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+/* ---- CTA Button ---- */
+.connectCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--brand-core);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 14px 32px;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  box-shadow: 0 4px 24px rgba(124, 95, 230, 0.3);
+}
+.connectCta:hover:not(:disabled) {
+  background: var(--brand-light);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 32px rgba(124, 95, 230, 0.45);
+}
+.connectCta:active:not(:disabled) {
+  transform: translateY(0);
+}
+.connectCta:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.connectIcon {
+  font-size: 1rem;
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---- Connected notice ---- */
+.connectedNotice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  background: var(--success-dim);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: var(--radius-full);
+  padding: 8px 18px;
+}
+
+.connectedDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+}
+
+/* ---- Privacy statement ---- */
+.privacyStatement {
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  max-width: 400px;
+  line-height: 1.6;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.lockIcon {
+  flex-shrink: 0;
+  font-style: normal;
+}

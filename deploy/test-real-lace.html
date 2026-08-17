@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌙 REAL Lace Connection Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 30px; background: #0a0a0f; color: white; max-width: 800px; margin: 0 auto; }
+        h1 { color: #8a6eff; }
+        .test { margin: 20px 0; padding: 20px; border: 1px solid #2a2a3a; border-radius: 8px; }
+        .success { background: rgba(128, 255, 160, 0.1); border-color: #4caf50; }
+        .error { background: rgba(255, 128, 128, 0.1); border-color: #f44336; }
+        .info { background: rgba(128, 192, 255, 0.1); border-color: #2196f3; }
+        button { padding: 12px 24px; background: #8a6eff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; margin: 10px 0; }
+        button:disabled { background: #2a2a3a; color: #666; cursor: not-allowed; }
+        pre { background: #1a1a1a; padding: 15px; border-radius: 5px; overflow: auto; font-family: monospace; font-size: 14px; white-space: pre-wrap; }
+        .status { padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .console { background: #000; color: #0f0; padding: 15px; font-family: monospace; height: 300px; overflow-y: auto; margin: 20px 0; border: 1px solid #2a2a3a; }
+        .console .error { color: #ff8080; }
+        .console .success { color: #80ffa0; }
+        .console .info { color: #80c0ff; }
+        .security { background: rgba(255, 204, 128, 0.1); border-left: 4px solid #ffcc80; padding: 15px; margin: 20px 0; }
+        code { background: #1a1a1a; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🌙 REAL Lace Connection Test</h1>
+    <p>Testing exact frontend pattern: <code>window.midnight → mnLace → connect("preprod")</code></p>
+    
+    <div class="security">
+        <strong>🔒 Security Notice:</strong> This page will ONLY display public wallet information.
+        <ul>
+            <li><strong>WILL show:</strong> Public addresses, balances, network status</li>
+            <li><strong>WILL NOT show:</strong> Private keys, seed phrases, recovery phrases</li>
+        </ul>
+    </div>
+    
+    <div class="test" id="test1">
+        <h3>1. Detect window.midnight</h3>
+        <button onclick="detectMidnight()">Detect Lace Extension</button>
+        <div class="status" id="midnightStatus"></div>
+        <pre id="midnightResult"></pre>
+    </div>
+    
+    <div class="test" id="test2">
+        <h3>2. Connect to Lace (Exact Frontend Pattern)</h3>
+        <button onclick="connectLace()" id="connectBtn" disabled>Connect via mnLace.connect("preprod")</button>
+        <div class="status" id="connectStatus"></div>
+        <pre id="connectResult"></pre>
+    </div>
+    
+    <div class="test" id="test3">
+        <h3>3. Get Wallet Information</h3>
+        <button onclick="getWalletInfo()" id="walletBtn" disabled>Get Shielded Addresses & Balances</button>
+        <div class="status" id="walletStatus"></div>
+        <pre id="walletResult"></pre>
+    </div>
+    
+    <div class="test" id="test4">
+        <h3>4. REAL Contract Deployment Test</h3>
+        <button onclick="testDeployment()" id="deployBtn" disabled>Test Deployment Flow</button>
+        <div class="status" id="deployStatus"></div>
+        <pre id="deployResult"></pre>
+    </div>
+    
+    <div class="test">
+        <h3>Console Output (Debug)</h3>
+        <div class="console" id="console"></div>
+        <button onclick="document.getElementById('console').innerHTML = ''">Clear Console</button>
+    </div>
+    
+    <div class="test info">
+        <h3>Testing Status</h3>
+        <div id="testSummary">
+            ✅ Server running at: <code>http://localhost:8080</code><br>
+            ✅ Served via HTTP (not file://)<br>
+            ⏳ Waiting for Lace extension detection...
+        </div>
+    </div>
+
+    <script>
+        let laceApi = null;
+        let walletConnected = false;
+        let walletInfo = null;
+        
+        function log(msg, type = 'info') {
+            const consoleDiv = document.getElementById('console');
+            const div = document.createElement('div');
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] <span class="${type}">${msg}</span>`;
+            consoleDiv.appendChild(div);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            console[type === 'error' ? 'error' : type === 'success' ? 'log' : 'info'](msg);
+        }
+        
+        function updateSummary() {
+            const summary = document.getElementById('testSummary');
+            const parts = [];
+            
+            parts.push('✅ Server running at: <code>http://localhost:8080</code>');
+            parts.push('✅ Served via HTTP (not file://)');
+            
+            if (window.midnight) {
+                const keys = Object.keys(window.midnight);
+                parts.push(`✅ Lace extension detected with ${keys.length} API key(s): ${keys.join(', ')}`);
+            } else {
+                parts.push('❌ Lace extension NOT detected');
+            }
+            
+            if (walletConnected) {
+                parts.push('✅ Lace wallet connected to Preprod');
+                if (walletInfo) {
+                    const addr = walletInfo.addresses.bech32Unshielded || 'Unknown';
+                    parts.push(`✅ Wallet address: ${addr.slice(0, 20)}...${addr.slice(-6)}`);
+                }
+            } else {
+                parts.push('⏳ Wallet not connected yet');
+            }
+            
+            summary.innerHTML = parts.join('<br>');
+        }
+        
+        function detectMidnight() {
+            log('Testing window.midnight availability...');
+            const statusDiv = document.getElementById('midnightStatus');
+            const resultDiv = document.getElementById('midnightResult');
+            
+            statusDiv.textContent = 'Checking...';
+            statusDiv.className = 'status info';
+            
+            if (!window.midnight) {
+                const errorMsg = '❌ window.midnight is UNDEFINED';
+                statusDiv.textContent = errorMsg;
+                statusDiv.className = 'status error';
+                resultDiv.textContent = `Lace wallet extension not detected.\n\nPossible issues:\n1. Lace extension not installed\n2. Page served via file:// (must be http://localhost)\n3. Lace extension disabled for this site\n4. Browser not supported\n\nCurrent origin: ${window.location.origin}`;
+                resultDiv.parentElement.className = 'test error';
+                log(errorMsg, 'error');
+                log(`Current origin: ${window.location.origin}`, 'error');
+                updateSummary();
+                return;
+            }
+            
+            const keys = Object.keys(window.midnight);
+            let output = `✅ window.midnight detected!\n\n`;
+            output += `Found ${keys.length} API key(s):\n`;
+            
+            keys.forEach((key, i) => {
+                const api = window.midnight[key];
+                output += `\n[${i + 1}] "${key}":\n`;
+                output += `  Type: ${typeof api}\n`;
+                
+                // Check for connect method
+                if (api && typeof api.connect === 'function') {
+                    output += `  ✅ Has connect() method\n`;
+                    if (key.includes('mnLace') || key.includes('lace')) {
+                        output += `  ⭐ Likely the correct Lace API\n`;
+                        document.getElementById('connectBtn').disabled = false;
+                    }
+                } else {
+                    output += `  ❌ No connect() method\n`;
+                }
+                
+                // List available methods
+                const methodNames = Object.keys(api).filter(k => typeof api[k] === 'function');
+                if (methodNames.length > 0) {
+                    output += `  Methods: ${methodNames.slice(0, 8).join(', ')}${methodNames.length > 8 ? `... (+${methodNames.length - 8})` : ''}\n`;
+                }
+            });
+            
+            // Also check for midnight property directly
+            if (window.midnight.mnLace) {
+                output += `\n✅ Found direct access: window.midnight.mnLace\n`;
+                document.getElementById('connectBtn').disabled = false;
+            }
+            
+            statusDiv.textContent = '✅ Lace extension detected!';
+            statusDiv.className = 'status success';
+            resultDiv.textContent = output;
+            resultDiv.parentElement.className = 'test success';
+            
+            log(`✅ Lace extension detected with ${keys.length} API key(s): ${keys.join(', ')}`, 'success');
+            log(`Current origin: ${window.location.origin}`, 'info');
+            updateSummary();
+        }
+        
+        async function connectLace() {
+            log('Connecting to Lace wallet using exact frontend pattern...');
+            const statusDiv = document.getElementById('connectStatus');
+            const resultDiv = document.getElementById('connectResult');
+            
+            statusDiv.textContent = 'Connecting...';
+            statusDiv.className = 'status info';
+            
+            try {
+                if (!window.midnight) {
+                    throw new Error('window.midnight not detected');
+                }
+                
+                // Try the exact frontend pattern: find mnLace or first API key
+                let apiKey = null;
+                let api = null;
+                
+                // Priority 1: mnLace
+                if (window.midnight.mnLace) {
+                    apiKey = 'mnLace';
+                    api = window.midnight.mnLace;
+                    log(`Using direct mnLace API`, 'success');
+                } else {
+                    // Priority 2: look for any API with connect method
+                    const keys = Object.keys(window.midnight);
+                    for (const key of keys) {
+                        if (window.midnight[key] && typeof window.midnight[key].connect === 'function') {
+                            apiKey = key;
+                            api = window.midnight[key];
+                            log(`Using API key: ${apiKey}`, 'info');
+                            break;
+                        }
+                    }
+                }
+                
+                if (!apiKey || !api) {
+                    throw new Error('No connectable Lace API found');
+                }
+                
+                // EXACT frontend pattern
+                log(`Calling: window.midnight.${apiKey}.connect("preprod")`, 'info');
+                laceApi = await api.connect('preprod');
+                
+                statusDiv.textContent = '✅ Connected to Lace wallet!';
+                statusDiv.className = 'status success';
+                walletConnected = true;
+                
+                let output = `✅ Successfully connected to Lace wallet!\n\n`;
+                output += `API Key: ${apiKey}\n`;
+                output += `Network: preprod\n`;
+                output += `Connection established at: ${new Date().toLocaleTimeString()}\n\n`;
+                output += `Available methods on laceApi:\n`;
+                
+                const methodNames = Object.keys(laceApi).filter(k => typeof laceApi[k] === 'function');
+                output += `${methodNames.slice(0, 10).join(', ')}${methodNames.length > 10 ? `... (+${methodNames.length - 10})` : ''}`;
+                
+                resultDiv.textContent = output;
+                resultDiv.parentElement.className = 'test success';
+                
+                document.getElementById('walletBtn').disabled = false;
+                document.getElementById('deployBtn').disabled = false;
+                
+                log(`✅ Connected to Lace wallet via ${apiKey}.connect("preprod")`, 'success');
+                log(`Available methods: ${methodNames.length}`, 'info');
+                updateSummary();
+                
+            } catch (error) {
+                const errorMsg = `❌ Connection failed: ${error.message}`;
+                statusDiv.textContent = errorMsg;
+                statusDiv.className = 'status error';
+                
+                let output = `Connection error: ${error.message}\n\n`;
+                output += `Full error:\n${error.stack || error}\n\n`;
+                output += `Troubleshooting:\n`;
+                output += `1. Make sure Lace wallet is unlocked\n`;
+                output += `2. Make sure Lace is connected to Midnight Preprod network\n`;
+                output += `3. Check browser console for extension errors\n`;
+                output += `4. Try refreshing Lace extension\n`;
+                output += `5. Origin must be http://localhost, not file://\n`;
+                output += `Current origin: ${window.location.origin}`;
+                
+                resultDiv.textContent = output;
+                resultDiv.parentElement.className = 'test error';
+                
+                log(errorMsg, 'error');
+                log(`Error stack: ${error.stack}`, 'error');
+                updateSummary();
+            }
+        }
+        
+        async function getWalletInfo() {
+            if (!laceApi) {
+                log('❌ Lace API not connected', 'error');
+                return;
+            }
+            
+            log('Getting wallet information...');
+            const statusDiv = document.getElementById('walletStatus');
+            const resultDiv = document.getElementById('walletResult');
+            
+            statusDiv.textContent = 'Fetching wallet info...';
+            statusDiv.className = 'status info';
+            
+            try {
+                // Get shielded addresses (exact frontend method)
+                log('Calling: laceApi.getShieldedAddresses()', 'info');
+                const addresses = await laceApi.getShieldedAddresses();
+                
+                // Get balances if available
+                let balances = { tNIGHT: 0, tDUST: 0 };
+                try {
+                    if (typeof laceApi.getBalances === 'function') {
+                        log('Calling: laceApi.getBalances()', 'info');
+                        balances = await laceApi.getBalances() || balances;
+                    }
+                } catch (balanceError) {
+                    log(`Balance check failed: ${balanceError.message}`, 'warning');
+                }
+                
+                // Get network info
+                let networkInfo = 'preprod';
+                try {
+                    if (typeof laceApi.getNetwork === 'function') {
+                        networkInfo = await laceApi.getNetwork();
+                    }
+                } catch (networkError) {
+                    // Ignore
+                }
+                
+                walletInfo = {
+                    addresses,
+                    balances,
+                    network: networkInfo,
+                    timestamp: new Date().toISOString()
+                };
+                
+                statusDiv.textContent = '✅ Wallet information retrieved!';
+                statusDiv.className = 'status success';
+                
+                let output = `✅ Wallet Information:\n\n`;
+                output += `Network: ${networkInfo}\n\n`;
+                output += `Addresses:\n`;
+                output += `• Bech32 Unshielded: ${addresses.bech32UnshieldedAddress || 'N/A'}\n`;
+                output += `• Bech32 Shielded: ${addresses.bech32ShieldedAddress || 'N/A'}\n`;
+                output += `• Shielded Coin PK: ${addresses.shieldedCoinPublicKey?.slice(0, 32) || 'N/A'}...\n\n`;
+                
+                output += `Balances:\n`;
+                output += `• tNIGHT: ${balances.tNIGHT || 0}\n`;
+                output += `• tDUST: ${balances.tDUST || 0}\n\n`;
+                
+                // Check if this matches expected wallet
+                const expectedAddress = 'mn_addr_preprod12np5ruhq3esqy704cnrje60x0kwlg3awp24qhg430r5295e904eqmpstff';
+                const actualAddress = addresses.bech32UnshieldedAddress;
+                
+                if (actualAddress === expectedAddress) {
+                    output += `✅ Wallet verification: MATCHES expected funded wallet!\n`;
+                } else {
+                    output += `⚠️ Wallet verification: Connected wallet DIFFERS from expected.\n`;
+                    output += `Expected: ${expectedAddress?.slice(0, 20)}...${expectedAddress?.slice(-6)}\n`;
+                    output += `Actual: ${actualAddress?.slice(0, 20)}...${actualAddress?.slice(-6)}\n`;
+                }
+                
+                // Check deployment readiness
+                const readyForDeployment = balances.tNIGHT >= 1000;
+                output += `\nDeployment readiness: ${readyForDeployment ? '✅ READY' : '⚠️ LOW BALANCE'}\n`;
+                output += `Minimum 1000 tNIGHT recommended for deployment. You have: ${balances.tNIGHT}`;
+                
+                resultDiv.textContent = output;
+                resultDiv.parentElement.className = 'test success';
+                
+                log(`✅ Got wallet info: ${actualAddress?.slice(0, 20)}...`, 'success');
+                log(`Balances: ${balances.tNIGHT} tNIGHT, ${balances.tDUST} tDUST`, 'info');
+                log(`Deployment ready: ${readyForDeployment}`, readyForDeployment ? 'success' : 'warning');
+                updateSummary();
+                
+            } catch (error) {
+                const errorMsg = `❌ Failed to get wallet info: ${error.message}`;
+                statusDiv.textContent = errorMsg;
+                statusDiv.className = 'status error';
+                
+                resultDiv.textContent = `Error: ${error.message}\n\nStack: ${error.stack || 'N/A'}`;
+                resultDiv.parentElement.className = 'test error';
+                
+                log(errorMsg, 'error');
+            }
+        }
+        
+        async function testDeployment() {
+            if (!laceApi || !walletInfo) {
+                log('❌ Wallet not connected or info not available', 'error');
+                return;
+            }
+            
+            log('Testing deployment flow...');
+            const statusDiv = document.getElementById('deployStatus');
+            const resultDiv = document.getElementById('deployResult');
+            
+            statusDiv.textContent = 'Testing deployment readiness...';
+            statusDiv.className = 'status info';
+            
+            try {
+                // Check proof server
+                log('Testing proof server connectivity...', 'info');
+                const proofServerOk = await fetch('http://localhost:6300', { method: 'HEAD' }).then(r => r.ok).catch(() => false);
+                
+                if (!proofServerOk) {
+                    throw new Error('Proof server not reachable at localhost:6300. Start Docker container.');
+                }
+                
+                // Check contract artifact
+                log('Testing contract artifact...', 'info');
+                const artifactResponse = await fetch('../contract/src/managed/age_verify/contract/index.js').catch(() => null);
+                const artifactExists = artifactResponse?.ok;
+                
+                let output = `✅ Deployment Readiness Test:\n\n`;
+                
+                output += `1. Lace Wallet: ✅ Connected\n`;
+                output += `   • Address: ${walletInfo.addresses.bech32UnshieldedAddress?.slice(0, 20)}...\n`;
+                output += `   • Balance: ${walletInfo.balances.tNIGHT} tNIGHT, ${walletInfo.balances.tDUST} tDUST\n`;
+                output += `   • Network: ${walletInfo.network}\n\n`;
+                
+                output += `2. Proof Server: ${proofServerOk ? '✅ Running' : '❌ Not reachable'}\n`;
+                output += `   • URL: http://localhost:6300\n\n`;
+                
+                output += `3. Contract Artifact: ${artifactExists ? '✅ Found' : '❌ Not found'}\n`;
+                output += `   • Location: contract/src/managed/age_verify/contract/index.js\n\n`;
+                
+                output += `4. Network Connectivity:\n`;
+                // Test indexer
+                const indexerOk = await fetch('https://indexer.preprod.midnight.network/api/v4/graphql', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: '{ __typename }' })
+                }).then(r => r.ok).catch(() => false);
+                output += `   • Indexer: ${indexerOk ? '✅ Reachable' : '⚠️ Connection issue'}\n\n`;
+                
+                const allReady = proofServerOk && artifactExists && walletInfo.balances.tNIGHT >= 1000;
+                
+                output += `📊 SUMMARY: ${allReady ? '✅ READY FOR REAL DEPLOYMENT' : '⚠️ NOT READY'}\n`;
+                output += `Requirements:\n`;
+                output += `• Lace connected to Preprod: ✅\n`;
+                output += `• Proof server running: ${proofServerOk ? '✅' : '❌'}\n`;
+                output += `• Contract compiled: ${artifactExists ? '✅' : '❌'}\n`;
+                output += `• Minimum 1000 tNIGHT: ${walletInfo.balances.tNIGHT >= 1000 ? '✅' : '❌'} (have: ${walletInfo.balances.tNIGHT})\n`;
+                output += `• DUST available: ${walletInfo.balances.tDUST > 0 ? '✅' : '⚠️'}\n\n`;
+                
+                if (allReady) {
+                    output += `🎉 All systems GO for REAL contract deployment!\n`;
+                    output += `Next step: Use the REAL deployment UI to deploy AgeVerify contract.\n`;
+                    output += `Threshold will be set to 18 (modifiable in deployment UI).\n\n`;
+                    output += `⚠️ REAL deployment will:\n`;
+                    output += `• Generate ZK proof (30-90 seconds)\n`;
+                    output += `• Create transaction (requires DUST)\n`;
+                    output += `• Submit to Midnight Preprod network\n`;
+                    output += `• Wait for confirmation (2-5 minutes)\n`;
+                    output += `• Return REAL contract address`;
+                    
+                    statusDiv.textContent = '✅ READY FOR REAL DEPLOYMENT!';
+                    statusDiv.className = 'status success';
+                } else {
+                    output += `❌ Cannot proceed with REAL deployment yet.\n`;
+                    output += `Fix the issues above, then retry.`;
+                    
+                    statusDiv.textContent = '⚠️ Not ready for deployment';
+                    statusDiv.className = 'status error';
+                }
+                
+                resultDiv.textContent = output;
+                resultDiv.parentElement.className = allReady ? 'test success' : 'test error';
+                
+                log(`Deployment readiness: ${allReady ? '✅ READY' : '⚠️ NOT READY'}`, allReady ? 'success' : 'warning');
+                
+            } catch (error) {
+                statusDiv.textContent = `❌ Deployment test failed: ${error.message}`;
+                statusDiv.className = 'status error';
+                resultDiv.textContent = `Error: ${error.message}\n\n${error.stack || ''}`;
+                resultDiv.parentElement.className = 'test error';
+                log(`Deployment test error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Initial check on page load
+        window.addEventListener('load', () => {
+            log(`Page loaded from: ${window.location.origin}`, 'info');
+            log(`Testing environment ready`, 'info');
+            updateSummary();
+            
+            // Auto-detect midnight after a short delay
+            setTimeout(() => {
+                log('Auto-detecting Lace extension...', 'info');
+                detectMidnight();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

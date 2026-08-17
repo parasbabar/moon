@@ -1,0 +1,181 @@
+.card {
+  width: 100%;
+  max-width: 540px;
+  border-radius: var(--radius-xl);
+  padding: clamp(24px, 4vw, 36px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: fadeIn 0.4s ease both;
+  box-shadow: var(--shadow-card);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.cardEligible {
+  background: linear-gradient(
+    160deg,
+    rgba(52, 211, 153, 0.06) 0%,
+    var(--bg-card) 60%
+  );
+  border: 1px solid rgba(52, 211, 153, 0.25);
+}
+
+.cardIneligible {
+  background: linear-gradient(
+    160deg,
+    rgba(248, 113, 113, 0.06) 0%,
+    var(--bg-card) 60%
+  );
+  border: 1px solid rgba(248, 113, 113, 0.2);
+}
+
+/* ---- Result header ---- */
+.resultHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.resultIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: var(--success-dim);
+  color: var(--success);
+  border: 2px solid rgba(52, 211, 153, 0.3);
+}
+
+.resultIconFail {
+  background: var(--danger-dim);
+  color: var(--danger);
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.resultTitle {
+  font-size: clamp(1.3rem, 3vw, 1.6rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--success);
+}
+
+.resultTitleFail {
+  color: var(--danger);
+}
+
+.resultSubtitle {
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+/* ---- Disclosure grid ---- */
+.disclosureGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.disclosureItem {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+}
+
+.disclosureLabel {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.disclosureValue {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.verifiedBadge {
+  color: var(--success);
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+
+.failBadge {
+  color: var(--danger);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+
+.privateValue {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* ---- Privacy note ---- */
+.privacyNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.privacyNoteIcon {
+  flex-shrink: 0;
+  font-size: 1rem;
+  color: var(--brand-core);
+  margin-top: 1px;
+}
+
+/* ---- Reset button ---- */
+.resetBtn {
+  align-self: center;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-mid);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 11px 28px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+.resetBtn:hover {
+  background: var(--brand-dim);
+  color: var(--brand-light);
+  border-color: var(--border-bright);
+}
+.resetBtn:focus-visible {
+  outline: 2px solid var(--brand-core);
+  outline-offset: 2px;
+}

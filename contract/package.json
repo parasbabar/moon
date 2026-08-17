@@ -1,0 +1,25 @@
+{
+  "name": "@midnight-verify/contract",
+  "version": "1.0.0",
+  "description": "Midnight Verify — Compact eligibility circuit and compiled contract artifacts",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "compact": "wsl -d Ubuntu -- bash '/mnt/d/Midnight Verify/contract/compile.sh'",
+    "test": "vitest",
+    "test:run": "vitest run --reporter=verbose",
+    "test:run:sim": "vitest run --reporter=verbose src/age_verify.simulator.test.ts",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "0.16.0",
+    "@midnight-ntwrk/onchain-runtime-v3": "^3.0.0"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}

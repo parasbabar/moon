@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌙 Exact Lace API Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #0a0a0f; color: white; }
+        .test { margin: 20px 0; padding: 15px; border: 1px solid #2a2a3a; border-radius: 5px; }
+        .success { background: rgba(128, 255, 160, 0.1); border-color: #4caf50; }
+        .error { background: rgba(255, 128, 128, 0.1); border-color: #f44336; }
+        button { padding: 12px 24px; background: #8a6eff; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        pre { background: #1a1a1a; padding: 15px; border-radius: 5px; overflow: auto; }
+        .console { background: #000; color: #0f0; padding: 10px; font-family: monospace; height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🌙 Exact Lace API Test</h1>
+    
+    <div class="test">
+        <h3>1. Check window.midnight</h3>
+        <button onclick="checkMidnight()">Check window.midnight</button>
+        <pre id="midnightResult"></pre>
+    </div>
+    
+    <div class="test">
+        <h3>2. Connect to Lace (Exact Frontend Pattern)</h3>
+        <button onclick="connectExact()" id="connectBtn" disabled>Connect via window.midnight[apiKey].connect('preprod')</button>
+        <pre id="connectResult"></pre>
+    </div>
+    
+    <div class="test">
+        <h3>3. Get Wallet Info</h3>
+        <button onclick="getWalletInfo()" id="infoBtn" disabled>Get Shielded Addresses</button>
+        <pre id="infoResult"></pre>
+    </div>
+    
+    <div class="test">
+        <h3>Console Output</h3>
+        <div class="console" id="console"></div>
+    </div>
+
+    <script>
+        let laceApi = null;
+        
+        function log(msg, type = 'info') {
+            const consoleDiv = document.getElementById('console');
+            const p = document.createElement('div');
+            p.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            p.style.color = type === 'error' ? '#ff8080' : type === 'success' ? '#80ffa0' : '#80c0ff';
+            consoleDiv.appendChild(p);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            console.log(msg);
+        }
+        
+        function checkMidnight() {
+            log('Checking window.midnight...');
+            const resultDiv = document.getElementById('midnightResult');
+            
+            if (!window.midnight) {
+                resultDiv.textContent = '❌ window.midnight is UNDEFINED';
+                resultDiv.parentElement.className = 'test error';
+                log('❌ window.midnight is undefined', 'error');
+                log('Possible issues:', 'error');
+                log('1. Lace extension not installed', 'error');
+                log('2. Page not served from allowed origin (must be http://localhost)', 'error');
+                log('3. Lace extension disabled for this site', 'error');
+                return;
+            }
+            
+            const keys = Object.keys(window.midnight);
+            let output = `✅ window.midnight exists with ${keys.length} keys:\n\n`;
+            
+            keys.forEach(key => {
+                const api = window.midnight[key];
+                output += `"${key}": ${typeof api}\n`;
+                
+                // Check for connect method
+                if (api && typeof api.connect === 'function') {
+                    output += `  ✅ Has connect() method\n`;
+                    document.getElementById('connectBtn').disabled = false;
+                } else {
+                    output += `  ❌ No connect() method\n`;
+                }
+                
+                // Show other methods
+                const methodNames = Object.keys(api).filter(k => typeof api[k] === 'function');
+                if (methodNames.length > 0) {
+                    output += `  Methods: ${methodNames.slice(0, 5).join(', ')}${methodNames.length > 5 ? '...' : ''}\n`;
+                }
+                output += '\n';
+            });
+            
+            resultDiv.textContent = output;
+            resultDiv.parentElement.className = 'test success';
+            log(`✅ Found window.midnight with keys: ${keys.join(', ')}`, 'success');
+        }
+        
+        async function connectExact() {
+            log('Connecting via exact frontend pattern...');
+            const resultDiv = document.getElementById('connectResult');
+            
+            try {
+                // Exact pattern from working frontend code
+                const midnight = window.midnight;
+                const networkId = 'preprod';
+                const apiKey = Object.keys(midnight)[0];
+                
+                if (!apiKey) {
+                    throw new Error('No API key found in window.midnight');
+                }
+                
+                log(`Using API key: "${apiKey}"`);
+                log(`Calling: midnight["${apiKey}"].connect("${networkId}")`);
+                
+                laceApi = await midnight[apiKey].connect(networkId);
+                
+                resultDiv.textContent = `✅ Connected successfully!\n\n`;
+                resultDiv.textContent += `API Key: ${apiKey}\n`;
+                resultDiv.textContent += `Network: ${networkId}\n`;
+                resultDiv.textContent += `Connected API type: ${typeof laceApi}\n`;
+                
+                // Check available methods
+                const methods = Object.keys(laceApi).filter(k => typeof laceApi[k] === 'function');
+                resultDiv.textContent += `\nAvailable methods (${methods.length}):\n`;
+                resultDiv.textContent += methods.slice(0, 10).join(', ');
+                if (methods.length > 10) resultDiv.textContent += `... (${methods.length - 10} more)`;
+                
+                resultDiv.parentElement.className = 'test success';
+                document.getElementById('infoBtn').disabled = false;
+                
+                log(`✅ Connected via midnight["${apiKey}"].connect("${networkId}")`, 'success');
+                log(`Available methods: ${methods.length}`, 'success');
+                
+            } catch (error) {
+                resultDiv.textContent = `❌ Connection failed:\n${error.message}\n\n`;
+                resultDiv.textContent += `Stack trace:\n${error.stack}`;
+                resultDiv.parentElement.className = 'test error';
+                
+                log(`❌ Connection error: ${error.message}`, 'error');
+                log(error.stack, 'error');
+            }
+        }
+        
+        async function getWalletInfo() {
+            log('Getting wallet info...');
+            const resultDiv = document.getElementById('infoResult');
+            
+            if (!laceApi) {
+                resultDiv.textContent = '❌ No active connection';
+                resultDiv.parentElement.className = 'test error';
+                return;
+            }
+            
+            try {
+                // Try getShieldedAddresses() method
+                if (typeof laceApi.getShieldedAddresses === 'function') {
+                    log('Calling getShieldedAddresses()...');
+                    const addresses = await laceApi.getShieldedAddresses();
+                    
+                    resultDiv.textContent = '✅ Got shielded addresses:\n\n';
+                    
+                    // Safe display - no private keys
+                    Object.keys(addresses).forEach(key => {
+                        const value = addresses[key];
+                        if (typeof value === 'string') {
+                            if (value.length > 50) {
+                                resultDiv.textContent += `${key}: ${value.slice(0, 30)}...${value.slice(-10)}\n`;
+                            } else {
+                                resultDiv.textContent += `${key}: ${value}\n`;
+                            }
+                        }
+                    });
+                    
+                    // Check if this matches expected wallet
+                    const expected = 'mn_addr_preprod12np5ruhq3esqy704cnrje60x0kwlg3awp24qhg430r5295e904eqmpstff';
+                    const foundAddress = addresses.bech32UnshieldedAddress;
+                    
+                    if (foundAddress) {
+                        resultDiv.textContent += `\n🔍 Address comparison:\n`;
+                        resultDiv.textContent += `Found: ${foundAddress.slice(0, 20)}...${foundAddress.slice(-10)}\n`;
+                        resultDiv.textContent += `Expected: ${expected.slice(0, 20)}...${expected.slice(-10)}\n`;
+                        
+                        if (foundAddress === expected) {
+                            resultDiv.textContent += `\n✅✅✅ MATCHES YOUR LACE PREPROD WALLET!\n`;
+                            log('✅✅✅ Wallet address matches expected Lace Preprod wallet!', 'success');
+                        } else {
+                            resultDiv.textContent += `\n⚠️ Address does not match expected wallet\n`;
+                            log('⚠️ Connected wallet does not match expected address', 'warning');
+                        }
+                    }
+                    
+                } else {
+                    // Try other methods
+                    resultDiv.textContent = '❌ getShieldedAddresses() not available\n\n';
+                    resultDiv.textContent += 'Available methods:\n';
+                    const methods = Object.keys(laceApi).filter(k => typeof laceApi[k] === 'function');
+                    resultDiv.textContent += methods.join(', ');
+                }
+                
+                resultDiv.parentElement.className = 'test success';
+                
+            } catch (error) {
+                resultDiv.textContent = `❌ Error getting wallet info:\n${error.message}`;
+                resultDiv.parentElement.className = 'test error';
+                log(`❌ Wallet info error: ${error.message}`, 'error');
+            }
+        }
+        
+        log('Page loaded. Ready to test exact Lace API.');
+    </script>
+</body>
+</html>

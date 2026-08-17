@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌙 Minimal Lace Connection Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .test { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background: #e8f5e8; border-color: #4caf50; }
+        .error { background: #ffebee; border-color: #f44336; }
+        .info { background: #e3f2fd; border-color: #2196f3; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>🌙 Minimal Lace Wallet Connection Test</h1>
+    
+    <div class="test info" id="step1">
+        <h3>Step 1: Check for wallet APIs</h3>
+        <button onclick="checkWalletAPIs()">Check Available Wallet APIs</button>
+        <div id="apiResult"></div>
+    </div>
+    
+    <div class="test" id="step2">
+        <h3>Step 2: Connect to Lace</h3>
+        <button onclick="connectToLace()" id="connectBtn" disabled>Connect to Lace</button>
+        <div id="connectResult"></div>
+    </div>
+    
+    <div class="test" id="step3">
+        <h3>Step 3: Test Connection</h3>
+        <button onclick="testConnection()" id="testBtn" disabled>Test Connection</button>
+        <div id="testResult"></div>
+    </div>
+    
+    <div class="test info">
+        <h3>Debug Information</h3>
+        <div id="debugInfo"></div>
+    </div>
+
+    <script>
+        let walletApi = null;
+        
+        function logDebug(message) {
+            console.log(`[DEBUG] ${message}`);
+            const debugDiv = document.getElementById('debugInfo');
+            const p = document.createElement('p');
+            p.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            debugDiv.appendChild(p);
+        }
+        
+        function checkWalletAPIs() {
+            logDebug('Checking for wallet APIs...');
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '';
+            
+            // Check for window.midnight (Midnight-specific API)
+            if (window.midnight) {
+                logDebug('✅ window.midnight exists');
+                const keys = Object.keys(window.midnight);
+                resultDiv.innerHTML += `<p><strong>window.midnight keys (${keys.length}):</strong> ${keys.join(', ')}</p>`;
+                
+                // Check each key for connect method
+                keys.forEach(key => {
+                    const api = window.midnight[key];
+                    if (api && typeof api.connect === 'function') {
+                        resultDiv.innerHTML += `<p>✅ window.midnight.${key} has connect() method</p>`;
+                        document.getElementById('connectBtn').disabled = false;
+                    }
+                });
+            } else {
+                logDebug('❌ window.midnight does not exist');
+                resultDiv.innerHTML += '<p>❌ window.midnight not found</p>';
+            }
+            
+            // Check for window.cardano (CIP-30 standard)
+            if (window.cardano) {
+                logDebug('✅ window.cardano exists (CIP-30)');
+                const cardanoKeys = Object.keys(window.cardano);
+                resultDiv.innerHTML += `<p><strong>window.cardano keys (${cardanoKeys.length}):</strong> ${cardanoKeys.join(', ')}</p>`;
+                
+                // Look for lace or midnight in cardano
+                if (window.cardano.lace) {
+                    logDebug('✅ Found window.cardano.lace');
+                    resultDiv.innerHTML += '<p>✅ Found window.cardano.lace</p>';
+                    document.getElementById('connectBtn').disabled = false;
+                }
+                if (window.cardano.midnight) {
+                    logDebug('✅ Found window.cardano.midnight');
+                    resultDiv.innerHTML += '<p>✅ Found window.cardano.midnight</p>';
+                    document.getElementById('connectBtn').disabled = false;
+                }
+            } else {
+                logDebug('❌ window.cardano does not exist');
+                resultDiv.innerHTML += '<p>❌ window.cardano not found</p>';
+            }
+            
+            // Check for other common patterns
+            const commonPatterns = ['ethereum', 'solana', 'phantom', 'polkadotJs'];
+            commonPatterns.forEach(pattern => {
+                if (window[pattern]) {
+                    logDebug(`Found window.${pattern}`);
+                    resultDiv.innerHTML += `<p>⚠️ Found window.${pattern} (not Midnight)</p>`;
+                }
+            });
+            
+            document.getElementById('step1').className = 'test success';
+        }
+        
+        async function connectToLace() {
+            logDebug('Attempting to connect to Lace...');
+            const resultDiv = document.getElementById('connectResult');
+            resultDiv.innerHTML = '';
+            
+            try {
+                // Pattern 1: Try window.cardano.lace first (most likely)
+                if (window.cardano && window.cardano.lace) {
+                    logDebug('Trying window.cardano.lace.enable()...');
+                    try {
+                        walletApi = await window.cardano.lace.enable();
+                        resultDiv.innerHTML = '<p>✅ Connected via window.cardano.lace.enable()</p>';
+                        document.getElementById('testBtn').disabled = false;
+                        document.getElementById('step2').className = 'test success';
+                        logDebug('✅ Successfully connected via window.cardano.lace');
+                        return;
+                    } catch (error) {
+                        logDebug(`window.cardano.lace.enable() failed: ${error.message}`);
+                        resultDiv.innerHTML += `<p>❌ window.cardano.lace.enable() failed: ${error.message}</p>`;
+                    }
+                }
+                
+                // Pattern 2: Try window.cardano.midnight
+                if (window.cardano && window.cardano.midnight) {
+                    logDebug('Trying window.cardano.midnight.enable()...');
+                    try {
+                        walletApi = await window.cardano.midnight.enable();
+                        resultDiv.innerHTML = '<p>✅ Connected via window.cardano.midnight.enable()</p>';
+                        document.getElementById('testBtn').disabled = false;
+                        document.getElementById('step2').className = 'test success';
+                        logDebug('✅ Successfully connected via window.cardano.midnight');
+                        return;
+                    } catch (error) {
+                        logDebug(`window.cardano.midnight.enable() failed: ${error.message}`);
+                        resultDiv.innerHTML += `<p>❌ window.cardano.midnight.enable() failed: ${error.message}</p>`;
+                    }
+                }
+                
+                // Pattern 3: Try window.midnight.*.connect()
+                if (window.midnight) {
+                    const midnightKeys = Object.keys(window.midnight);
+                    for (const key of midnightKeys) {
+                        const api = window.midnight[key];
+                        if (api && typeof api.connect === 'function') {
+                            logDebug(`Trying window.midnight.${key}.connect('preprod')...`);
+                            try {
+                                walletApi = await api.connect('preprod');
+                                resultDiv.innerHTML = `<p>✅ Connected via window.midnight.${key}.connect('preprod')</p>`;
+                                document.getElementById('testBtn').disabled = false;
+                                document.getElementById('step2').className = 'test success';
+                                logDebug(`✅ Successfully connected via window.midnight.${key}`);
+                                return;
+                            } catch (error) {
+                                logDebug(`window.midnight.${key}.connect('preprod') failed: ${error.message}`);
+                                resultDiv.innerHTML += `<p>❌ window.midnight.${key}.connect('preprod') failed: ${error.message}</p>`;
+                                
+                                // Try without parameter
+                                logDebug(`Trying window.midnight.${key}.connect()...`);
+                                try {
+                                    walletApi = await api.connect();
+                                    resultDiv.innerHTML = `<p>✅ Connected via window.midnight.${key}.connect()</p>`;
+                                    document.getElementById('testBtn').disabled = false;
+                                    document.getElementById('step2').className = 'test success';
+                                    logDebug(`✅ Successfully connected via window.midnight.${key} (no param)`);
+                                    return;
+                                } catch (error2) {
+                                    logDebug(`window.midnight.${key}.connect() failed: ${error2.message}`);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // All patterns failed
+                resultDiv.innerHTML += '<p>❌ All connection patterns failed. Possible issues:</p>';
+                resultDiv.innerHTML += '<ul>';
+                resultDiv.innerHTML += '<li>Lace extension not installed/enabled</li>';
+                resultDiv.innerHTML += '<li>Page not served from allowed origin (try http://localhost)</li>';
+                resultDiv.innerHTML += '<li>Lace wallet not unlocked</li>';
+                resultDiv.innerHTML += '<li>Wrong network (should be Midnight Preprod)</li>';
+                resultDiv.innerHTML += '</ul>';
+                document.getElementById('step2').className = 'test error';
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<p>❌ Connection error: ${error.message}</p>`;
+                document.getElementById('step2').className = 'test error';
+                logDebug(`❌ Connection error: ${error.message}`);
+            }
+        }
+        
+        async function testConnection() {
+            logDebug('Testing connection...');
+            const resultDiv = document.getElementById('testResult');
+            resultDiv.innerHTML = '';
+            
+            if (!walletApi) {
+                resultDiv.innerHTML = '<p>❌ No active connection</p>';
+                return;
+            }
+            
+            try {
+                // Try to get network ID
+                let networkId = 'unknown';
+                if (typeof walletApi.getNetworkId === 'function') {
+                    networkId = await walletApi.getNetworkId();
+                    logDebug(`Network ID: ${networkId}`);
+                    resultDiv.innerHTML += `<p>Network ID: ${networkId} (${networkId === 0 ? 'Testnet' : networkId === 1 ? 'Mainnet' : 'Unknown'})</p>`;
+                }
+                
+                // Try to get addresses
+                if (typeof walletApi.getUsedAddresses === 'function') {
+                    const addresses = await walletApi.getUsedAddresses();
+                    logDebug(`Got ${addresses.length} addresses`);
+                    resultDiv.innerHTML += `<p>Addresses: ${addresses.length} found</p>`;
+                    if (addresses.length > 0) {
+                        resultDiv.innerHTML += `<p>First address: ${addresses[0].slice(0, 30)}...</p>`;
+                    }
+                }
+                
+                // Try to get shielded addresses (Midnight-specific)
+                if (typeof walletApi.getShieldedAddresses === 'function') {
+                    const shielded = await walletApi.getShieldedAddresses();
+                    logDebug('Got shielded addresses');
+                    resultDiv.innerHTML += '<p>✅ Got shielded addresses (Midnight-specific)</p>';
+                    if (shielded.bech32UnshieldedAddress) {
+                        const addr = shielded.bech32UnshieldedAddress;
+                        resultDiv.innerHTML += `<p>Unshielded address: ${addr.slice(0, 20)}...${addr.slice(-10)}</p>`;
+                        
+                        // Check if this matches expected wallet
+                        const expected = 'mn_addr_preprod12np5ruhq3esqy704cnrje60x0kwlg3awp24qhg430r5295e904eqmpstff';
+                        if (addr === expected) {
+                            resultDiv.innerHTML += '<p>✅✅✅ MATCHES EXPECTED LACE PREPROD WALLET!</p>';
+                        }
+                    }
+                }
+                
+                // Try to get balance
+                if (typeof walletApi.getBalance === 'function') {
+                    const balance = await walletApi.getBalance();
+                    logDebug(`Balance: ${balance}`);
+                    resultDiv.innerHTML += `<p>Balance: ${balance}</p>`;
+                }
+                
+                document.getElementById('step3').className = 'test success';
+                logDebug('✅ Connection test successful');
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<p>❌ Test error: ${error.message}</p>`;
+                document.getElementById('step3').className = 'test error';
+                logDebug(`❌ Test error: ${error.message}`);
+            }
+        }
+        
+        // Initial check
+        logDebug('Page loaded. Ready to test.');
+    </script>
+</body>
+</html>

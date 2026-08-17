@@ -1,0 +1,88 @@
+pragma language_version >= 0.16;
+import CompactStandardLibrary;
+
+// Midnight Verify — Age/Eligibility Circuit
+// Prove eligibility. Reveal nothing else.
+//
+// Privacy model:
+//   PRIVATE: The user's exact age (supplied via witness — never disclosed on-chain)
+//   PUBLIC:  The eligibility threshold (e.g. 18)
+//   PUBLIC:  The verification result (eligible / not eligible) stored on ledger
+//
+// The ZK circuit proves: private_age >= threshold
+// Only the boolean result is disclosed to the public ledger via disclose().
+// The exact age is NEVER written to the ledger.
+
+// -------------------------------------------------------------------
+// Witness declaration
+// The witness supplies the private age from the user's local environment.
+// This value is used inside the ZK circuit but NEVER disclosed on-chain.
+// -------------------------------------------------------------------
+witness getAge(): Uint<8>;
+
+// -------------------------------------------------------------------
+// Ledger — public on-chain state
+// -------------------------------------------------------------------
+
+// The eligibility threshold (publicly visible — this is the public rule)
+export ledger threshold: Uint<8>;
+
+// The verification result: true = eligible, false = not eligible / unverified
+export ledger eligible: Boolean;
+
+// A monotonically increasing counter of verification interactions (audit trail)
+export ledger verificationCount: Counter;
+
+// -------------------------------------------------------------------
+// Constructor — called once at deployment
+// initialThreshold is disclosed so it becomes public ledger state.
+// -------------------------------------------------------------------
+constructor(initialThreshold: Uint<8>) {
+  threshold = disclose(initialThreshold);
+  eligible = false;
+  verificationCount.increment(0);
+}
+
+// -------------------------------------------------------------------
+// Circuit: verifyAge
+//
+// Privacy guarantees:
+//   - getAge() witness supplies the age inside the ZK proof ONLY
+//   - The age value is NEVER written to the ledger
+//   - Only the boolean result is disclosed via disclose(true)
+//
+// The assert() enforces the eligibility condition at the circuit level.
+// If the condition fails, the ZK proof cannot be constructed —
+// the frontend cannot fake a passing result.
+// -------------------------------------------------------------------
+export circuit verifyAge(): [] {
+  const age: Uint<8> = getAge();
+  assert(age >= threshold, 'Age does not meet the required threshold');
+  eligible = disclose(true);
+  verificationCount.increment(1);
+}
+
+// -------------------------------------------------------------------
+// Circuit: resetVerification
+// Resets the eligibility state. Useful for re-verification.
+// -------------------------------------------------------------------
+export circuit resetVerification(): [] {
+  eligible = disclose(false);
+  verificationCount.increment(1);
+}
+
+// -------------------------------------------------------------------
+// Circuit: getStatus
+// Read-only: returns current eligibility status.
+// -------------------------------------------------------------------
+export circuit getStatus(): Boolean {
+  return eligible;
+}
+
+// -------------------------------------------------------------------
+// Circuit: getThreshold
+// Read-only: returns the current eligibility threshold.
+// -------------------------------------------------------------------
+export circuit getThreshold(): Uint<8> {
+  return threshold;
+}

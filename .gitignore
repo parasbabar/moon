@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Environment variables — NEVER commit these
+.env
+.env.local
+.env.*.local
+
+# Midnight private state stores
+*.leveldb/
+private-state/
+
+# Compact toolchain artifacts
+.compact/
+
+# Logs
+*.log
+npm-debug.log*
+loglevel-debug-*.log
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Test outputs
+test-results/
+coverage/
+
+# Proof server / Docker
+proof-server-data/
+
+# Wallet seeds / credentials — these should NEVER be committed
+*.seed
+*.key
+wallet-seed.txt

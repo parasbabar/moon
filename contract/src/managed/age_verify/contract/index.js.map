@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "file": "index.js",
+  "sourceRoot": "../../../",
+  "sources": ["age_verify.compact"],
+  "names": [],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EAuCA;;;;;;;;;;;;;MAkBA,AAAA,SAKC;;;;;;;;;;;;;;;;;;;;;;OAAA;MAMD,AAAA,iBAGC;;;;;;;;;;;;;;;;;;;;;;OAAA;MAMD,AAAA,SAEC;;;;;;;;;;;;;;;;;;;;;;OAAA;MAMD,AAAA,YAEC;;;;;;;;;;;;;;;;;;;;;;OAAA;;;;;;;;;;;;;;GA5CA;EAJD;;;;;UAAY,kBAAyB;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IAZrC;;;;;;;;;yEAAiC;IAGjC;;;;;;;;;yEAAgC;IAGhC;;;;;;;;;yEAAyC;IAOvC;;;;;;;2HAAqB,kBAAgB;;yEAA5B;IACT;;;;;;;;;yEAAQ;UACR,KAAiB;IAAjB;;;;;;;;;;6FAAA,KAAiB;;;;wEAAA;;;;;;;GAClB;EAvBD,AAAA,SAA0B;;0DAA1B,MAA0B;;;;;;;;;;;;;;GAAA;EAqC1B,AAAA,YAKC;UAJO,KAAuB;4BACtB,KAAG;;oDAAI;;;;;;;;;;;yHAAS;;IACvB;;;;;;;;;yEAAQ;UACR,KAAiB;IAAjB;;;;;;;;;;6FAAA,KAAiB;;;;wEAAA;;GAClB;EAMD,AAAA,oBAGC;IAFC;;;;;;;;;yEAAQ;UACR,KAAiB;IAAjB;;;;;;;;;;6FAAA,KAAiB;;;;wEAAA;;GAClB;EAMD,AAAA,YAEC;mCADQ;;;;;;;;;;;wGAAQ;GAChB;EAMD,AAAA,eAEC;mCADQ;;;;;;;;;;;wGAAS;GACjB;;;;;;;;;;;;;;;;IA5DD;qCAAA;;;;;;;;;;;0GAAiC;KAAA;IAGjC;qCAAA;;;;;;;;;;;0GAAgC;KAAA;IAGhC;qCAAA;;;;;;;;;;;0GAAyC;KAAA;;;;;;;;;;"
+}

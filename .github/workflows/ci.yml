@@ -1,0 +1,157 @@
+name: CI — Midnight Verify
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+
+jobs:
+  # ============================================================
+  # Job 1: Install & TypeScript check
+  # ============================================================
+  typecheck:
+    name: TypeScript Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check (frontend)
+        run: npx tsc --noEmit
+        working-directory: frontend
+
+  # ============================================================
+  # Job 2: Contract simulator tests
+  #
+  # Runs both test suites:
+  #   - age_verify.test.ts          (pure logic, no runtime deps)
+  #   - age_verify.simulator.test.ts (real Contract + createCircuitContext)
+  #
+  # The managed/ directory contains the pre-compiled compiler output
+  # (committed to the repo). The Compact CLI is NOT required for CI —
+  # only for recompiling after contract source changes.
+  # ============================================================
+  test:
+    name: Contract Tests (Simulator)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: typecheck
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run all contract tests
+        run: npm run test:run --workspace=contract
+
+      - name: Verify test count (must be >= 18)
+        run: |
+          RESULT=$(npm run test:run --workspace=contract 2>&1 || true)
+          PASSED=$(echo "$RESULT" | grep -oP 'Tests\s+\K[0-9]+(?= passed)' || echo "0")
+          echo "Tests passed: $PASSED"
+          if [ "$PASSED" -lt 18 ]; then
+            echo "ERROR: Expected >= 18 tests to pass, got $PASSED"
+            exit 1
+          fi
+
+  # ============================================================
+  # Job 3: Build frontend (Vite production build)
+  # ============================================================
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend (Vite production build)
+        run: npx vite build
+        working-directory: frontend
+        env:
+          NODE_ENV: production
+
+      - name: Verify build output exists
+        run: test -f frontend/dist/index.html
+
+      - name: Upload frontend build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+          retention-days: 7
+
+  # ============================================================
+  # Job 4: Verify Compact source compiles (Linux only, optional)
+  #
+  # Installs the Compact CLI and compiles age_verify.compact to
+  # verify the source is syntactically correct against compactc 0.31.0.
+  # This job is allowed to fail without blocking the pipeline —
+  # the committed managed/ artifacts are the authoritative source.
+  # ============================================================
+  compact-compile:
+    name: Compact Compile Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: typecheck
+    continue-on-error: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Compact devtools
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf \
+            https://github.com/midnightntwrk/compact/releases/download/compact-v0.5.1/compact-installer.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install Compact toolchain 0.31.0
+        run: compact update 0.31.0
+
+      - name: Compile age_verify.compact
+        run: |
+          compact compile \
+            contract/src/age_verify.compact \
+            /tmp/compact-ci-output
+        # Note: this compiles to a temp dir — we don't overwrite the committed
+        # managed/ artifacts in CI. Regenerate locally with npm run compact:wsl
+
+      - name: Verify compiler output exists
+        run: |
+          test -f /tmp/compact-ci-output/contract/index.js
+          test -f /tmp/compact-ci-output/contract/index.d.ts
+          echo "Compact compilation succeeded"
+          cat /tmp/compact-ci-output/compiler/contract-info.json

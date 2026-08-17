@@ -1,0 +1,171 @@
+/* ============================================================
+   Midnight Verify — Global Styles
+   Theme: HALF LIGHT. HALF SHADOW.
+   ============================================================ */
+
+/* ---- CSS Custom Properties ---- */
+:root {
+  /* Background palette — deep night */
+  --bg-void:       #050508;
+  --bg-base:       #0a0a0f;
+  --bg-surface:    #111118;
+  --bg-elevated:   #16161f;
+  --bg-card:       #1a1a25;
+  --bg-input:      #12121a;
+
+  /* Border */
+  --border-subtle: rgba(124, 95, 230, 0.12);
+  --border-mid:    rgba(124, 95, 230, 0.22);
+  --border-bright: rgba(124, 95, 230, 0.45);
+
+  /* Brand — violet/purple moonlight */
+  --brand-core:   #7c5fe6;
+  --brand-light:  #a584f5;
+  --brand-dim:    rgba(124, 95, 230, 0.15);
+  --brand-glow:   rgba(124, 95, 230, 0.08);
+
+  /* Semantic */
+  --success:      #34d399;
+  --success-dim:  rgba(52, 211, 153, 0.12);
+  --danger:       #f87171;
+  --danger-dim:   rgba(248, 113, 113, 0.12);
+  --warning:      #fbbf24;
+  --info:         #60a5fa;
+
+  /* Text */
+  --text-primary:   #f0eeff;
+  --text-secondary: #9a94b8;
+  --text-muted:     #5a5570;
+  --text-disabled:  #3a3550;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* Sizing */
+  --radius-sm:  6px;
+  --radius-md:  12px;
+  --radius-lg:  18px;
+  --radius-xl:  24px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-card:  0 4px 32px rgba(0, 0, 0, 0.6), 0 1px 0 var(--border-subtle);
+  --shadow-glow:  0 0 40px rgba(124, 95, 230, 0.08);
+  --shadow-input: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+
+  /* Transitions */
+  --transition-fast:   150ms ease;
+  --transition-base:   250ms ease;
+  --transition-slow:   400ms ease;
+}
+
+/* ---- Reset & Base ---- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--brand-core); }
+
+/* ---- Focus styles ---- */
+:focus-visible {
+  outline: 2px solid var(--brand-core);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ---- Selection ---- */
+::selection {
+  background-color: var(--brand-dim);
+  color: var(--brand-light);
+}
+
+/* ---- Typography scale ---- */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+a {
+  color: var(--brand-light);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+a:hover { color: var(--text-primary); }
+
+code, kbd {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--bg-elevated);
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ---- Utility classes ---- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Animations ---- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes moonGlow {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(124, 95, 230, 0.3)); }
+  50%       { filter: drop-shadow(0 0 20px rgba(124, 95, 230, 0.6)); }
+}
+
+.animate-fade-in  { animation: fadeIn 0.4s ease both; }
+.animate-pulse    { animation: pulse 2s ease-in-out infinite; }
+.animate-spin     { animation: spinSlow 1.5s linear infinite; }
+.animate-glow     { animation: moonGlow 3s ease-in-out infinite; }
