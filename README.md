@@ -46,7 +46,7 @@ The private value enters a Midnight ZK circuit. The circuit enforces the conditi
 - 🔒 **Privacy-preserving verification** — exact age never disclosed on-chain
 - ⬡ **Real Midnight ZK circuit** — eligibility enforced at the circuit level, not just JS
 - 🌙 **Dark, premium UI** — Half Light. Half Shadow. visual system
-- 🔗 **Wallet connection** — Lace wallet integration (Midnight Network)
+- 🔗 **Wallet connection** — I AM Wallet / Lace wallet integration (Midnight Network)
 - ✓ **Success / failure states** — clear, minimal result disclosure
 - 📱 **Responsive design** — desktop, tablet, and mobile
 - ♿ **Accessible** — semantic HTML, ARIA labels, keyboard navigation
@@ -60,7 +60,7 @@ The private value enters a Midnight ZK circuit. The circuit enforces the conditi
 ```
 User's Browser (Private)
   │
-  │  private age → Lace wallet → DApp Connector API
+  │  private age → I AM Wallet → DApp Connector API
   ▼
 Midnight Verify Frontend
   │  React + Vite + TypeScript
@@ -186,9 +186,9 @@ circuit verifyAge() {
 
 ## Wallet Integration
 
-Midnight Verify uses the **Lace wallet** with the **Midnight DApp Connector API**:
+Midnight Verify uses the **I AM Wallet (1AM)** or **Lace wallet** with the **Midnight DApp Connector API**:
 
-1. User connects Lace wallet (Preprod network)
+1. User connects I AM Wallet or Lace wallet (Preprod network)
 2. Wallet provides secure key material for transaction signing
 3. DApp Connector API balances and submits transactions
 4. Private age remains in user's browser — never sent to wallet
@@ -229,7 +229,7 @@ Midnight Verify uses the **Lace wallet** with the **Midnight DApp Connector API*
 - Node.js 22+
 - Docker Desktop
 - Git
-- Lace wallet (for Preprod testing)
+- I AM Wallet (1AM) or Lace wallet (for Preprod testing)
 
 ### 1. Clone repository
 ```bash
@@ -391,7 +391,7 @@ GitHub Actions workflow runs on every push and PR:
 1. Proof server running (`docker compose -f docker/proof-server.yml up -d`)
 2. MIDNIGHT_DEPLOY_SEED in `.env` (64-char hex or 24-word mnemonic)
 3. Wallet funded with tNIGHT (https://faucet.midnight.network/)
-4. DUST generated (Lace wallet → Preprod → Tokens → Generate tDUST)
+4. DUST generated (Wallet → Preprod → Tokens → Generate tDUST)
 
 ### Get wallet address
 ```bash
@@ -438,7 +438,7 @@ Once deployed, the contract will be visible on the Preprod block explorer.
 The live demo connects to the real Preprod contract and uses real ZK proofs.
 
 **Demo flow**:
-1. Connect Lace wallet (Preprod network)
+1. Connect I AM Wallet or Lace wallet (Preprod network)
 2. Enter private age
 3. Generate ZK proof locally
 4. Submit transaction to Preprod
@@ -520,7 +520,7 @@ Use Midnight's zero-knowledge technology to verify eligibility while keeping per
 [1-minute demo video](demo-video.mp4) showing:
 
 **0–10 sec**: Landing page introduction  
-**10–20 sec**: Lace wallet connection  
+**10–20 sec**: Midnight wallet connection (I AM Wallet or Lace)  
 **20–35 sec**: Private age entry + verification  
 **35–45 sec**: Verified result + private age protection  
 **45–52 sec**: 18/18 tests passing  
@@ -549,6 +549,13 @@ The video demonstrates the complete privacy-preserving flow from wallet connecti
 - `verificationCount` provides non-repudiation
 - Public ledger for transparency
 - No PII in audit logs
+
+### Trust Model
+- **Current demo mode**: The ZK circuit proves that the supplied private value satisfies the 18+ threshold.
+- **Self-attested age**: In this demo, the age value is supplied by the user. The proof demonstrates only that the supplied value meets the threshold — it does not authenticate the user's real-world age.
+- **Separate properties**: Privacy (age stays on-device) and authenticity (real-world verification) are independent. The ZK proof preserves privacy, but because the input is self-attested, it does not establish real-world age.
+- **Production requirement**: A production deployment would require an issuer-backed age credential or equivalent trusted attestation mechanism (e.g., W3C Verifiable Credentials from a government or organizational issuer).
+- **Honest product model**: "Zero-knowledge age-threshold demonstration using a self-attested private value."
 
 ---
 
@@ -579,7 +586,7 @@ MIT License — see [LICENSE](LICENSE) file.
 
 - [Midnight Network](https://midnight.network) for the privacy platform
 - [Compact language](https://docs.midnight.network/compact) for ZK circuits
-- [Lace wallet](https://www.lace.io/) for wallet integration
+- [I AM Wallet (1AM)](https://1am.xyz/) for wallet integration
 - Contributors and testers
 
 ---
@@ -588,9 +595,9 @@ MIT License — see [LICENSE](LICENSE) file.
 
 **Project**: Midnight Verify  
 **Challenge**: Age / Eligibility Gate  
-**Status**: Production-ready  
+**Status**: Demo — ZK age-threshold proof with self-attested private value  
 **Repository**: https://github.com/YOUR_USERNAME/midnight-verify  
-**Live Demo**: [Will be populated after deployment]
+**Live Demo**: [Will be populated after deployment with trusted credential integration]
 
 ---
 

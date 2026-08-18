@@ -6,9 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "npm run copy-zk-keys && tsc && vite build",
+    "copy-zk-keys": "node scripts/copy-zk-keys.mjs",
     "preview": "vite preview",
-    "lint": "eslint src --ext .ts,.tsx",
     "clean": "rimraf dist"
   },
   "dependencies": {

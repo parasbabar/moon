@@ -98,7 +98,7 @@ jobs:
         run: npm ci
 
       - name: Build frontend (Vite production build)
-        run: npx vite build
+        run: npm run build
         working-directory: frontend
         env:
           NODE_ENV: production
