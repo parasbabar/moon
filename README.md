@@ -513,9 +513,24 @@ Once deployed, the contract will be visible on the Preprod block explorer.
 
 ## Live Demo
 
-**Live URL**: `[Will be populated after deployment to hosting]`
+🔗 **Live Demo**: **[warm-crostata-51c1f1.netlify.app](https://warm-crostata-51c1f1.netlify.app/)**
 
-The live demo connects to the real Preprod contract and uses real ZK proofs.
+The live demo is a fully hosted deployment of Midnight Verify. Open the link,
+connect a Midnight wallet, and try the real privacy-preserving flow.
+
+**The live demo demonstrates**:
+
+- 🔗 **Lace Wallet connection** — connects via the Midnight DApp Connector API
+- ⬡ **Midnight Preprod contract deployment** — deploys the AgeVerify contract
+  on-chain directly from the browser (wallet approval required)
+- 🔒 **Private age / 18+ threshold ZK verification** — the private age is fed to
+  the `getAge()` witness of the Compact circuit; only the boolean eligibility
+  result is proven
+- 🕶️ **Privacy-preserving verification** — the exact age never leaves the device
+  and never appears on-chain
+- ⚠️ **Self-attested trust-model limitation** — the age is user-supplied, so the
+  proof shows the *supplied* value meets the threshold, not the user's real-world
+  age (see the [Trust Model](#trust-model) disclosure)
 
 **Demo flow**:
 1. Connect I AM Wallet or Lace wallet (Preprod network)
@@ -698,7 +713,7 @@ MIT License — see [LICENSE](LICENSE) file.
 **Challenge**: Age / Eligibility Gate  
 **Status**: Demo — ZK age-threshold proof with self-attested private value  
 **Repository**: https://github.com/parasbabar/moon  
-**Live Demo**: [Will be populated after deployment with trusted credential integration]
+**Live Demo**: https://warm-crostata-51c1f1.netlify.app/
 
 ---
 
