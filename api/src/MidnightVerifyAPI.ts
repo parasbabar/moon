@@ -422,12 +422,14 @@ export class MidnightVerifyAPI {
         verificationStatus: 'eligible',
         verificationResult: result,
         errorMessage:       null,
+        isVerifying:        false,
       });
     } else {
       this.updateState({
         verificationStatus: 'not-eligible',
         verificationResult: result,
         errorMessage:       null,
+        isVerifying:        false,
       });
     }
 
@@ -446,9 +448,9 @@ export class MidnightVerifyAPI {
     const { runCircuitSimulator } = await import('./circuit-runner.js');
     const circuitResult = await runCircuitSimulator(privateAge, threshold);
 
-    await this.delay(600);
+await this.delay(600);
     this.updateState({ verificationStatus: 'awaiting-confirmation' });
-await this.delay(400);
+    await this.delay(400);
 
     const result: VerificationResult = {
       eligible:          circuitResult.eligible,
@@ -462,6 +464,7 @@ await this.delay(400);
       verificationStatus: circuitResult.eligible ? 'eligible' : 'not-eligible',
       verificationResult: result,
       errorMessage:       null,
+      isVerifying:        false,
     });
 
     return result;
