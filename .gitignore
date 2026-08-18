@@ -48,3 +48,13 @@ proof-server-data/
 *.seed
 *.key
 wallet-seed.txt
+
+# Scratch / backup files
+*.bak
+*.orig
+*~
+scratch/
+# Local dev launcher helpers
+start_dev.ps1
+start_vite.bat
+start_vite.ps1
