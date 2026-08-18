@@ -2,7 +2,7 @@
 
 > **Prove eligibility. Reveal nothing else.**
 
-[![CI — Midnight Verify](https://github.com/YOUR_USERNAME/midnight-verify/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/midnight-verify/actions/workflows/ci.yml)
+[![CI — Midnight Verify](https://github.com/parasbabar/moon/actions/workflows/ci.yml/badge.svg)](https://github.com/parasbabar/moon/actions/workflows/ci.yml)
 
 ---
 
@@ -80,6 +80,25 @@ AgeVerify Contract (Preprod)
   │  Public ledger: threshold, eligible, verificationCount
   │  Private witness: exact age (NEVER stored)
 ```
+
+---
+
+## User Flow
+
+```
+1. Connect wallet            → I AM Wallet / Lace (Midnight Preprod)
+2. Deploy contract (optional) → one-time on-chain deployment, wallet approval
+3. Enter private age          → stays on-device, never transmitted
+4. Generate ZK proof          → circuit proves age >= threshold
+5. Approve verification tx    → wallet signs & submits to Preprod
+6. On-chain confirmation      → result written to public ledger
+7. See result                 → AGE THRESHOLD PROVEN / NOT PROVEN
+8. Exact age stays private    → only the boolean result is disclosed
+```
+
+If a contract address is already configured (`VITE_CONTRACT_ADDRESS`) or a
+previously deployed contract is detected (persisted in the browser), step 2 is
+skipped and verification runs against the existing contract.
 
 ---
 
@@ -197,6 +216,33 @@ Midnight Verify uses the **I AM Wallet (1AM)** or **Lace wallet** with the **Mid
 
 ---
 
+## Wallet Setup (Lace / I AM Wallet)
+
+Midnight Verify works with any wallet that exposes the **Midnight DApp Connector
+API** on `window.midnight`. Both **Lace** and **I AM Wallet (1AM)** support it.
+
+### Install Lace
+1. Install the **Lace** browser extension (Chrome/Firefox).
+2. Open Lace and create/import a wallet.
+3. Switch the network to **Midnight Preprod** (Lace → Settings → Network → Preprod).
+4. Fund the wallet with **tNIGHT** from the [Midnight faucet](https://faucet.midnight.network/).
+5. Generate **tDUST** (Lace → Preprod → Tokens → Generate tDUST) — DUST is
+   required to balance transactions.
+
+### Install I AM Wallet (1AM)
+1. Install the **1AM** browser extension (Chrome/Firefox).
+2. Create or import a wallet and connect it to **Midnight Preprod**.
+3. Fund with tNIGHT / tDUST as above.
+
+### Known browser conflicts
+- **MetaMask conflicts**: MetaMask and Lace/1AM both inject web3 provider streams.
+  If the wallet fails to connect, disable MetaMask (or the other wallet) and
+  refresh the page. See [`FIX_LACE_CONNECTION.md`](FIX_LACE_CONNECTION.md).
+- The dApp auto-detects `window.midnight` — only one Midnight wallet should be
+  enabled at a time.
+
+---
+
 ## Tech Stack
 
 **Contract Layer**
@@ -233,8 +279,8 @@ Midnight Verify uses the **I AM Wallet (1AM)** or **Lace wallet** with the **Mid
 
 ### 1. Clone repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/midnight-verify.git
-cd midnight-verify
+git clone https://github.com/parasbabar/moon.git
+cd moon
 ```
 
 ### 2. Install dependencies
@@ -419,6 +465,40 @@ cd frontend
 npm run build
 ```
 
+### Deploy from the browser (recommended)
+The frontend includes an in-app **Deploy Contract** button (shown when a real
+Midnight wallet is connected). Clicking it:
+
+1. Asks the wallet to prove the deployment circuit (wallet approval popup).
+2. Balances the transaction (DUST fees covered automatically).
+3. Submits to Preprod and waits for on-chain confirmation.
+4. Persists the returned `ct_...` address and deployment transaction hash
+   (linked to the Midnight Preprod explorer).
+
+No seed phrase is ever handled by the app — key material stays in the wallet.
+
+---
+
+## ZK Verification
+
+When a deployed contract address is available and a real wallet is connected,
+the app runs the **real on-chain verification**:
+
+1. The private age is placed in local private state and fed to the `getAge()`
+   witness of the compiled `verifyAge` circuit.
+2. The wallet's proving provider generates a real ZK proof.
+3. The transaction is balanced and signed by the wallet (user approval).
+4. The proof is submitted to Preprod and confirmed on-chain.
+5. The app reads the updated public ledger and shows
+   **AGE THRESHOLD PROVEN / NOT PROVEN**, along with the real verification
+   transaction hash (explorer link + copy button).
+
+The exact age never leaves the device and never appears on-chain.
+
+If no contract is deployed or no wallet is available, the app falls back to a
+**local circuit simulator** using the same compiled Contract class — same ZK
+logic, no network. The result is clearly marked as simulator/demo in the UI.
+
 ---
 
 ## Contract Address
@@ -559,6 +639,27 @@ The video demonstrates the complete privacy-preserving flow from wallet connecti
 
 ---
 
+## Known Limitations
+
+- **Self-attested age input**: The age is entered by the user and is not backed
+  by a trusted issuer. The ZK proof guarantees the *supplied value* meets the
+  threshold, but does not establish the user's real-world age.
+- **No credential issuance**: This demo has no integration with a government or
+  organizational identity issuer. A production deployment would require an
+  issuer-backed age credential (e.g., W3C Verifiable Credentials).
+- **Proof server dependency**: Live verification requires a proof server
+  (`docker compose -f docker/proof-server.yml up -d`) or a wallet that can
+  produce proofs locally. Without it, only the local simulator path is used.
+- **Indexer latency**: After a transaction is confirmed, the public indexer may
+  take a few seconds to reflect the new ledger state. A slightly delayed read
+  produces a "contract state not found" error; retrying usually succeeds.
+- **Single deploy per dApp**: Deployment is a one-time on-chain action per
+  browser; subsequent loads restore the persisted contract address.
+- **Preprod network only**: All on-chain interactions target Midnight Preprod.
+  Test tokens have no real-world value.
+
+---
+
 ## License
 
 MIT License — see [LICENSE](LICENSE) file.
@@ -596,7 +697,7 @@ MIT License — see [LICENSE](LICENSE) file.
 **Project**: Midnight Verify  
 **Challenge**: Age / Eligibility Gate  
 **Status**: Demo — ZK age-threshold proof with self-attested private value  
-**Repository**: https://github.com/YOUR_USERNAME/midnight-verify  
+**Repository**: https://github.com/parasbabar/moon  
 **Live Demo**: [Will be populated after deployment with trusted credential integration]
 
 ---
