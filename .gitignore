@@ -40,6 +40,7 @@ Desktop.ini
 # Test outputs
 test-results/
 coverage/
+vitest-ci-results.json
 
 # Proof server / Docker
 proof-server-data/

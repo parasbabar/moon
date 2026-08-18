@@ -67,13 +67,21 @@ jobs:
 
       - name: Verify test count (must be >= 18)
         run: |
-          RESULT=$(npm run test:run --workspace=contract 2>&1 || true)
-          PASSED=$(echo "$RESULT" | grep -oP 'Tests\s+\K[0-9]+(?= passed)' || echo "0")
+          # Run vitest once more with the JSON reporter so the pass count is
+          # read from machine-readable output. Parsing the human-readable
+          # summary with grep is unreliable: vitest wraps the summary line in
+          # ANSI escape codes (e.g. "Tests \e[22m \e[1m\e[32m18 passed"),
+          # so patterns like "Tests\s+\K\d+(?= passed)" match nothing and
+          # report 0. The JSON reporter output is exact and formatting-proof.
+          cd contract
+          npx vitest run --reporter=verbose --reporter=json --outputFile=vitest-ci-results.json
+          PASSED=$(node -e "const r=require('./vitest-ci-results.json'); console.log(r.numPassedTests)")
           echo "Tests passed: $PASSED"
           if [ "$PASSED" -lt 18 ]; then
             echo "ERROR: Expected >= 18 tests to pass, got $PASSED"
             exit 1
           fi
+          echo "Test count check passed: $PASSED tests"
 
   # ============================================================
   # Job 3: Build frontend (Vite production build)
