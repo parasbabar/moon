@@ -513,7 +513,14 @@ Once deployed, the contract will be visible on the Preprod block explorer.
 
 ## Live Demo
 
-🔗 **Live Demo**: **[warm-crostata-51c1f1.netlify.app](https://warm-crostata-51c1f1.netlify.app/)**
+🔗 **Demo link**: **[warm-crostata-51c1f1.netlify.app](https://warm-crostata-51c1f1.netlify.app/)**
+<div align="center">
+
+### 🎥 1-Minute Demo Video
+
+[▶️ Watch the Demo](https://docs.google.com/videos/d/1bnoz3R2g8axL68iaJaL-rk-JVz8Y9x6C1MD3XT8sN8Y/play?usp=sharing)
+
+</div>
 
 The live demo is a fully hosted deployment of Midnight Verify. Open the link,
 connect a Midnight wallet, and try the real privacy-preserving flow.
@@ -543,21 +550,19 @@ connect a Midnight wallet, and try the real privacy-preserving flow.
 ---
 
 ## Screenshots
+### 🧪 Test Results
 
-![Midnight Verify Landing Page](screenshots/landing.png)
-*Landing page with "Half Light. Half Shadow." aesthetic*
+18/18 contract tests passing, covering eligibility logic, boundary conditions, privacy invariants, custom thresholds, and witness isolation.
 
-![Wallet Connection](screenshots/wallet-connection.png)  
-*Lace wallet connection flow*
+![Test Results](<img width="1920" height="1080" alt="Screenshot 2026-08-19 001247" src="https://github.com/user-attachments/assets/faf64a2f-0938-4655-9edf-d82de5f9d00e" />
+)
 
-![Verification Result](screenshots/verification-result.png)
-*Eligibility verified — exact age remains private*
+### ⛓️ On-Chain Transaction
 
-![Test Results](screenshots/tests.png)
-*18/18 tests passing*
+The dApp successfully deployed the AgeVerify smart contract on the Midnight **Preprod** network through a real wallet transaction.
 
-![CI Pipeline](screenshots/ci-pipeline.png)
-*GitHub Actions CI/CD pipeline passing*
+![Smart Contract Deployment Transaction](<img width="1920" height="1080" alt="Screenshot 2026-08-19 001618" src="https://github.com/user-attachments/assets/c169fc18-de69-455e-b7c9-3412a6bd4079" />
+)
 
 ---
 
