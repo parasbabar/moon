@@ -10,8 +10,12 @@
  * Pattern:
  *   CompiledContract.make(tag, ContractConstructor)
  *   then pipe through:
- *   CompiledContract.withWitnesses({ witnesses: witnessObj })
+ *   CompiledContract.withWitnesses(witnessObj)
  *   CompiledContract.withCompiledFileAssets('path/to/managed/age_verify')
+ *
+ * withWitnesses stores the object as-is and the runtime instantiates the
+ * Contract as `new Contract(context.witnesses)` — so the witnesses object
+ * must be passed directly (NOT wrapped as `{ witnesses }`).
  *
  * The compiledAssetsPath must point to the directory containing:
  *   keys/{circuitName}.prover
@@ -60,8 +64,8 @@ export function makeCompiledContract(age: bigint = 0n) {
     // Step 1: bind the compiled Contract constructor to a tag
     CompiledContract.make(CONTRACT_TAG, Contract),
     // Step 2: supply witness implementations
-    // CompactContext.Witnesses shape: { witnesses: W }
-    CompiledContract.withWitnesses({ witnesses }),
+    // CompactContext.Witnesses shape: the witnesses object itself
+    CompiledContract.withWitnesses(witnesses),
     // Step 3: tell the system where to find prover/verifier keys and ZKIR
     CompiledContract.withCompiledFileAssets(ZK_ASSETS_PATH),
   );

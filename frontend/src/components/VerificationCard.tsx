@@ -11,20 +11,28 @@ interface VerificationCardProps {
 const STATUS_LABELS: Record<VerificationStatus, string> = {
   idle:                   'Verify Eligibility',
   'generating-proof':     'Generating proof…',
+  'proof-generated':      'Proof generated',
+  'waiting-for-wallet-approval': 'Waiting for wallet approval…',
   submitting:             'Submitting transaction…',
+  'submitting-transaction': 'Submitting transaction…',
   'awaiting-confirmation':'Awaiting confirmation…',
   eligible:               'Verified',
   'not-eligible':         'Not Eligible',
+  rejected:               'Verification cancelled',
   error:                  'Verify Eligibility',
 };
 
 const STEP_LABELS: Record<VerificationStatus, string> = {
   idle:                   '',
-  'generating-proof':     'Executing circuit — your age remains private',
+  'generating-proof':     'Executing circuit - your age remains private',
+  'proof-generated':     'Proof generated',
+  'waiting-for-wallet-approval': 'Waiting for wallet approval…',
   submitting:             'Submitting ZK proof to the contract…',
+  'submitting-transaction': 'Submitting transaction…',
   'awaiting-confirmation':'Waiting for on-chain confirmation…',
   eligible:               '',
   'not-eligible':         '',
+  rejected:               '',
   error:                  '',
 };
 

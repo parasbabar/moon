@@ -10,6 +10,18 @@ interface HeaderProps {
   onDisconnect: () => void;
 }
 
+const NIGHT_DECIMALS = 6;
+const DUST_DECIMALS  = 15;
+
+function formatBalance(balance: bigint | null, decimals: number): string {
+  if (balance === null) return '—';
+  const scale = 10n ** BigInt(decimals);
+  const whole = balance / scale;
+  const frac  = balance % scale;
+  const fracStr = frac.toString().padStart(decimals, '0').slice(0, 4);
+  return `${whole.toLocaleString('en-US')}.${fracStr}`;
+}
+
 export function Header({
   walletStatus,
   walletInfo,
@@ -34,6 +46,23 @@ export function Header({
         <div className={styles.walletArea}>
           {isConnected && walletInfo ? (
             <div className={styles.walletConnected}>
+              {walletInfo.nightBalance !== null && (
+                <span className={styles.walletBalance} title="Unshielded NIGHT balance">
+                  ⬡ {formatBalance(walletInfo.nightBalance, NIGHT_DECIMALS)} NIGHT
+                </span>
+              )}
+              {walletInfo.dustBalance !== null && (
+                <span
+                  className={styles.walletBalance}
+                  title={
+                    walletInfo.dustCap !== null
+                      ? `DUST balance (cap ${formatBalance(walletInfo.dustCap, DUST_DECIMALS)})`
+                      : 'DUST balance'
+                  }
+                >
+                  ✦ {formatBalance(walletInfo.dustBalance, DUST_DECIMALS)} DUST
+                </span>
+              )}
               <span className={styles.walletDot} aria-hidden="true" />
               <span className={styles.walletAddress} title={walletInfo.fullAddress}>
                 {walletInfo.displayAddress}

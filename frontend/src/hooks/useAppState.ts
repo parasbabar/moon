@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getMidnightVerifyAPI } from '@midnight-verify/api';
-import type { AppState, VerificationResult } from '@midnight-verify/api';
+import type { AppState, DeploymentInfo, VerificationResult } from '@midnight-verify/api';
 
 export interface UseAppState {
   state: AppState;
@@ -15,7 +15,10 @@ export interface UseAppState {
   disconnectWallet: () => void;
   verifyEligibility: (age: bigint, threshold?: bigint) => Promise<VerificationResult>;
   resetVerification: () => void;
-  deployContract: (contractAddress?: string) => Promise<void>;
+  deployContract: (initialAge?: bigint) => Promise<DeploymentInfo>;
+  trustMode: string;
+  deploymentStatus: 'idle' | 'in-progress' | 'failed' | 'confirmed';
+  deploymentTxHash: string | null;
 }
 
 export function useAppState(): UseAppState {
@@ -48,8 +51,8 @@ export function useAppState(): UseAppState {
     api.current.resetVerification();
   }, []);
 
-  const deployContract = useCallback(async (contractAddress?: string) => {
-    await api.current.deployOrConnect(contractAddress);
+  const deployContract = useCallback(async (initialAge?: bigint) => {
+    return api.current.deployContract(initialAge);
   }, []);
 
   return {
@@ -59,5 +62,8 @@ export function useAppState(): UseAppState {
     verifyEligibility,
     resetVerification,
     deployContract,
+    trustMode: state.trustMode,
+    deploymentStatus: state.deploymentStatus,
+    deploymentTxHash: state.deploymentTxHash,
   };
 }

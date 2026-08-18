@@ -11,10 +11,14 @@
 export type VerificationStatus =
   | 'idle'
   | 'generating-proof'
+  | 'proof-generated'
+  | 'waiting-for-wallet-approval'
   | 'submitting'
+  | 'submitting-transaction'
   | 'awaiting-confirmation'
   | 'eligible'
   | 'not-eligible'
+  | 'rejected'
   | 'error';
 
 // ---------------------------------------------------------------------------
@@ -42,6 +46,18 @@ export interface VerificationResult {
   readonly verificationCount: bigint;
 
   /**
+   * The transaction id of the on-chain verification transaction (live path only).
+   * Null when the verification was run through the local simulator.
+   */
+  readonly transactionHash: string | null;
+
+  /**
+   * The contract address the verification was executed against (live path only).
+   * Null in simulator mode.
+   */
+  readonly contractAddress: string | null;
+
+  /**
    * PRIVACY: The exact age is NEVER included here.
    * The frontend must not display the age in the result.
    */
@@ -59,6 +75,15 @@ export interface WalletInfo {
 
   /** Network name */
   readonly network: string;
+
+  /** Unshielded NIGHT balance (null when the wallet cannot report it) */
+  readonly nightBalance: bigint | null;
+
+  /** Current DUST balance (null when the wallet cannot report it) */
+  readonly dustBalance: bigint | null;
+
+  /** Maximum DUST that can be generated from the current NIGHT holding */
+  readonly dustCap: bigint | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -80,6 +105,10 @@ export interface AppState {
   readonly verificationResult: VerificationResult | null;
   readonly errorMessage: string | null;
   readonly deploymentInfo: DeploymentInfo | null;
+  readonly deploymentStatus: 'idle' | 'in-progress' | 'failed' | 'confirmed';
+  readonly deploymentTxHash: string | null;
+  readonly trustMode: string;
+  readonly isVerifying: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -104,6 +133,7 @@ export class VerificationError extends Error {
       | 'PROOF_FAILED'
       | 'CONTRACT_ERROR'
       | 'TIMEOUT'
+      | 'DUPLICATE_SUBMISSION'
       | 'UNKNOWN',
   ) {
     super(message);

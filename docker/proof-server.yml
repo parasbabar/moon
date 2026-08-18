@@ -12,7 +12,7 @@
 # Start:   docker compose -f docker/proof-server.yml up -d
 # Stop:    docker compose -f docker/proof-server.yml down
 # Logs:    docker compose -f docker/proof-server.yml logs -f
-# Status:  curl http://localhost:6300/status
+# Status:  curl http://localhost:6300/health
 #
 # After starting, confirm it is ready:
 #   docker compose -f docker/proof-server.yml logs -f
@@ -28,8 +28,11 @@ services:
       # Persist downloaded ZK parameters — avoids re-downloading on every restart
       - proof-server-data:/data
     restart: unless-stopped
+    # NOTE: the image has no curl/wget, so health is probed with a bash
+    # TCP connect. actix-web only binds :6300 after SRS params are loaded,
+    # so a successful connect means the server is ready.
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:6300/status || exit 1"]
+      test: ["CMD-SHELL", "/bin/bash -c 'exec 3<>/dev/tcp/127.0.0.1/6300'"]
       interval: 15s
       timeout: 10s
       retries: 20

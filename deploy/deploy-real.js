@@ -1,8 +1,8 @@
 /**
- * 🌙 Midnight Verify — REAL Contract Deployment via Lace DApp Connector
+ * 🌙 Midnight Verify — REAL Contract Deployment via Midnight DApp Connector
  * 
- * This deploys the REAL AgeVerify contract to Preprod using Lace wallet.
- * No seed exposure - uses Lace DApp Connector API exclusively.
+ * This deploys the REAL AgeVerify contract to Preprod using Midnight wallet (Lace or I AM Wallet).
+ * No seed exposure - uses Midnight DApp Connector API exclusively.
  */
 
 import { Contract } from '@midnight-ntwrk/midnight-js-contracts';
@@ -18,38 +18,45 @@ const INDEXER_URL = 'https://indexer.preprod.midnight.network/api/v4/graphql';
 const NETWORK = 'preprod';
 
 /**
- * Deploy REAL contract via Lace
+ * Deploy REAL contract via Midnight wallet (Lace or I AM Wallet)
  */
 export async function deployRealContract({ threshold = 18n, onStatus = null } = {}) {
     console.log('🚀 Starting REAL contract deployment to Midnight Preprod...');
     
-    // Step 1: Verify Lace wallet is available
-    onStatus?.('Checking Lace wallet', 5);
+    // Step 1: Verify Midnight wallet is available
+    onStatus?.('Checking Midnight wallet', 5);
     if (!window.midnight) {
         throw new Error(
-            'Lace wallet not detected.\n\n' +
+            'Midnight wallet not detected.\n\n' +
             'Please ensure:\n' +
-            '1. Lace wallet extension is installed\n' +
-            '2. Lace is unlocked\n' +
-            '3. Lace is connected to Midnight Preprod network\n' +
+            '1. Midnight wallet extension (Lace or I AM Wallet) is installed\n' +
+            '2. Wallet is unlocked\n' +
+            '3. Wallet is connected to Midnight Preprod network\n' +
             '4. Refresh this page after unlocking'
         );
     }
     
     try {
-        // Step 2: Connect to Lace wallet
+        // Step 2: Connect to Lace wallet (with timeout)
         onStatus?.('Connecting to Lace wallet', 10);
         const apiKeys = Object.keys(window.midnight);
         if (apiKeys.length === 0) {
-            throw new Error('No Midnight wallet API found in Lace.');
+            throw new Error('No Midnight wallet API found.');
         }
         
         const apiKey = apiKeys[0];
-        const laceApi = await window.midnight[apiKey].connect('preprod');
+        
+        // Add timeout to prevent hanging
+        const connectPromise = window.midnight[apiKey].connect('preprod');
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Connection timeout after 15000ms')), 15000);
+        });
+        
+        const walletApi = await Promise.race([connectPromise, timeoutPromise]);
         
         // Step 3: Get wallet addresses and verify
         onStatus?.('Getting wallet information', 15);
-        const walletInfo = await laceApi.getShieldedAddresses();
+        const walletInfo = await walletApi.getShieldedAddresses();
         const coinPk = walletInfo.shieldedCoinPublicKey;
         const bech32Address = walletInfo.bech32UnshieldedAddress;
         
@@ -118,10 +125,10 @@ export async function deployRealContract({ threshold = 18n, onStatus = null } = 
         const txBytes = deploymentTx.toBytes();
         console.log('Transaction bytes generated:', txBytes.length, 'bytes');
         
-        // Step 9: Sign with Lace wallet
-        onStatus?.('Signing transaction with Lace', 60);
-        const signature = await laceApi.signTransaction(txBytes);
-        console.log('Transaction signed by Lace');
+        // Step 9: Sign with wallet
+        onStatus?.('Signing transaction with wallet', 60);
+        const signature = await walletApi.signTransaction(txBytes);
+        console.log('Transaction signed by Midnight wallet');
         
         // Step 10: Submit to network
         onStatus?.('Submitting to Midnight Preprod', 70);
@@ -187,7 +194,7 @@ export async function deployRealContract({ threshold = 18n, onStatus = null } = 
             transactionHash: txHash,
             network: NETWORK,
             threshold: Number(threshold),
-            laceWalletAddress: bech32Address,
+            walletAddress: bech32Address,
             timestamp: new Date().toISOString(),
             contractInfo,
             note: '✅ REAL contract deployed successfully to Midnight Preprod!'
@@ -200,12 +207,12 @@ export async function deployRealContract({ threshold = 18n, onStatus = null } = 
         if (error.message.includes('DUST') || error.message.includes('dust')) {
             throw new Error(
                 'DUST required for transaction.\n\n' +
-                'Your Lace wallet needs tDUST for transaction balancing.\n\n' +
-                'In Lace wallet:\n' +
+                'Your Midnight wallet needs tDUST for transaction balancing.\n\n' +
+                'In your wallet:\n' +
                 '1. Open the DUST section\n' +
                 '2. Generate tDUST for Preprod network\n' +
                 '3. Try deployment again\n\n' +
-                'Note: Lace automatically handles DUST during transaction submission.'
+                'Note: Wallet automatically handles DUST during transaction submission.'
             );
         }
         
@@ -216,7 +223,7 @@ export async function deployRealContract({ threshold = 18n, onStatus = null } = 
                 '• Deployment transaction fee\n' +
                 '• DUST generation\n' +
                 '• Network fees\n\n' +
-                'Ensure your Lace wallet has enough tNIGHT for deployment.'
+                'Ensure your wallet has enough tNIGHT for deployment.'
             );
         }
         
@@ -283,13 +290,13 @@ async function verifyContractViaIndexer(contractAddress) {
 }
 
 /**
- * Test Lace connection and wallet balance
+ * Test Midnight wallet connection and wallet balance
  */
-export async function testLaceConnectionReal() {
+export async function testMidnightConnectionReal() {
     if (!window.midnight) {
         return {
             connected: false,
-            error: 'Lace wallet extension not detected'
+            error: 'Midnight wallet extension not detected'
         };
     }
     
@@ -303,10 +310,10 @@ export async function testLaceConnectionReal() {
         }
         
         const apiKey = apiKeys[0];
-        const laceApi = await window.midnight[apiKey].connect('preprod');
+        const walletApi = await window.midnight[apiKey].connect('preprod');
         
-        const addresses = await laceApi.getShieldedAddresses();
-        const balances = await laceApi.getBalances?.() || { tNIGHT: 0, tDUST: 0 };
+        const addresses = await walletApi.getShieldedAddresses();
+        const balances = await walletApi.getBalances?.() || { tNIGHT: 0, tDUST: 0 };
         
         return {
             connected: true,
@@ -332,18 +339,18 @@ export async function testLaceConnectionReal() {
  */
 export async function checkPrerequisitesReal() {
     const results = {
-        laceWallet: { ok: false, message: '', details: null },
+        midnightWallet: { ok: false, message: '', details: null },
         proofServer: { ok: false, message: '' },
         contractArtifact: { ok: false, message: '' },
         indexer: { ok: false, message: '' }
     };
     
     try {
-        // Check Lace wallet
-        const laceTest = await testLaceConnectionReal();
-        results.laceWallet.ok = laceTest.connected;
-        results.laceWallet.message = laceTest.connected ? 'Connected' : laceTest.error;
-        results.laceWallet.details = laceTest.connected ? laceTest : null;
+        // Check Midnight wallet
+        const walletTest = await testMidnightConnectionReal();
+        results.midnightWallet.ok = walletTest.connected;
+        results.midnightWallet.message = walletTest.connected ? 'Connected' : walletTest.error;
+        results.midnightWallet.details = walletTest.connected ? walletTest : null;
         
         // Check proof server
         try {
@@ -382,9 +389,9 @@ export async function checkPrerequisitesReal() {
         return {
             allOk,
             results,
-            readyForDeployment: allOk && laceTest.connected && laceTest.balances?.tNIGHT >= 1000,
+            readyForDeployment: allOk && walletTest.connected && walletTest.balances?.tNIGHT >= 1000,
             recommendations: allOk ? [] : [
-                !results.laceWallet.ok && 'Install/unlock Lace wallet and connect to Preprod',
+                !results.midnightWallet.ok && 'Install/unlock Midnight wallet (Lace or I AM Wallet) and connect to Preprod',
                 !results.proofServer.ok && 'Start proof server: docker compose -f docker/proof-server.yml up -d',
                 !results.contractArtifact.ok && 'Compile contract: npm run compact:wsl',
                 !results.indexer.ok && 'Check network connectivity'
@@ -401,6 +408,6 @@ export async function checkPrerequisitesReal() {
 
 export default {
     deployRealContract,
-    testLaceConnectionReal,
+    testMidnightConnectionReal,
     checkPrerequisitesReal
 };

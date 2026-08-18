@@ -11,10 +11,6 @@ export default defineConfig({
       // The API layer does NOT import the contract package at build time —
       // contract interaction happens at runtime through the wallet provider.
       '@midnight-verify/api': resolve(__dirname, '../api/src/index.ts'),
-      // Prevent Vite from trying to bundle these problematic packages
-      '@midnight-ntwrk/ledger-v8': resolve(__dirname, '../api/src/noop.js'),
-      '@midnight-ntwrk/midnight-js-indexer-public-data-provider': resolve(__dirname, '../api/src/noop.js'),
-      '@subsquid/scale-codec': resolve(__dirname, '../api/src/noop.js'),
     },
   },
   worker: {
@@ -26,32 +22,32 @@ export default defineConfig({
     // Support synchronous WASM modules
     sync: ['@midnight-ntwrk/ledger-v8'],
   },
-  // Exclude WASM-dependent packages from the browser bundle.
-  // The Compact runtime and onchain-runtime are used server-side (tests/deploy).
-  // In the browser, ZK proof generation is handled by the Lace wallet extension.
+  // The Compact runtime, onchain-runtime and ledger-v8 are bundled as async
+  // chunks — they are only loaded when the user actually verifies on-chain.
   optimizeDeps: {
+    include: [
+      // CJS packages consumed via the deploy/verify path. They have no ESM
+      // `default`/named exports and reference `exports` directly, so they must
+      // be pre-bundled by esbuild for correct browser interop.
+      'object-inspect',
+      '@subsquid/scale-codec',
+      '@subsquid/util-internal-hex',
+      '@subsquid/util-internal-json',
+      // Node Buffer implementation (browser build) used to expose a global
+      // `Buffer` for the Node-targeted deps above (see src/shims/buffer-global).
+      'buffer',
+    ],
     exclude: [
       '@midnight-ntwrk/onchain-runtime-v3',
       '@midnight-ntwrk/compact-runtime',
       '@midnight-verify/contract',
       '@midnight-ntwrk/ledger-v8',
-      '@subsquid/scale-codec',
     ],
   },
   build: {
     outDir: 'dist',
     sourcemap: true,
     rollupOptions: {
-      // Treat the Midnight runtime as external — it must not be bundled.
-      // The Lace wallet provides these capabilities at runtime.
-      external: [
-        '@midnight-ntwrk/onchain-runtime-v3',
-        '@midnight-ntwrk/compact-runtime',
-        '@midnight-verify/contract',
-        '@midnight-ntwrk/ledger-v8',
-        '@subsquid/scale-codec',
-        '@midnight-ntwrk/midnight-js-indexer-public-data-provider',
-      ],
       output: {
         manualChunks: {
           react: ['react', 'react-dom'],

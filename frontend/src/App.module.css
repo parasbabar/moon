@@ -47,3 +47,70 @@
   max-width: 960px;
   margin: 0 auto;
 }
+
+/* ---- Deployment status bar ---- */
+.deploymentBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 540px;
+  padding: 10px 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.statusLabel {
+  flex: 1;
+}
+
+.txLink {
+  color: var(--brand-light);
+  font-size: 0.8rem;
+}
+
+/* ---- Trust mode indicator ---- */
+.trustModeBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  max-width: 540px;
+  padding: 12px 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.trustModeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand-core);
+  flex-shrink: 0;
+}
+
+.trustModeLabel {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.trustModeNote {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  flex-basis: 100%;
+  margin-left: 18px;
+}

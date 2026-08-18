@@ -67,7 +67,6 @@ export function PrivacyArchitecture(): React.ReactElement {
           icon="🔒"
           items={[
             'Your exact age',
-            'Your date of birth',
             'Any age-related private value',
             'Any information beyond the eligibility result',
           ]}
