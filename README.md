@@ -14,6 +14,46 @@ The application uses Midnight's Compact language to write a ZK circuit that enfo
 
 ---
 
+
+## Live Demo
+
+🔗 **Demo link**: **[warm-crostata-51c1f1.netlify.app](https://warm-crostata-51c1f1.netlify.app/)**
+<div align="center">
+
+### 🎥 1-Minute Demo Video
+
+[▶️ Watch the Demo](https://docs.google.com/videos/d/1bnoz3R2g8axL68iaJaL-rk-JVz8Y9x6C1MD3XT8sN8Y/play?usp=sharing)
+
+</div>
+
+The live demo is a fully hosted deployment of Midnight Verify. Open the link,
+connect a Midnight wallet, and try the real privacy-preserving flow.
+
+**The live demo demonstrates**:
+
+- 🔗 **Lace Wallet connection** — connects via the Midnight DApp Connector API
+- ⬡ **Midnight Preprod contract deployment** — deploys the AgeVerify contract
+  on-chain directly from the browser (wallet approval required)
+- 🔒 **Private age / 18+ threshold ZK verification** — the private age is fed to
+  the `getAge()` witness of the Compact circuit; only the boolean eligibility
+  result is proven
+- 🕶️ **Privacy-preserving verification** — the exact age never leaves the device
+  and never appears on-chain
+- ⚠️ **Self-attested trust-model limitation** — the age is user-supplied, so the
+  proof shows the *supplied* value meets the threshold, not the user's real-world
+  age (see the [Trust Model](#trust-model) disclosure)
+
+**Demo flow**:
+1. Connect I AM Wallet or Lace wallet (Preprod network)
+2. Enter private age
+3. Generate ZK proof locally
+4. Submit transaction to Preprod
+5. Receive eligibility result
+6. Exact age remains private
+
+---
+
+
 ## Problem
 
 Traditional eligibility verification forces an unacceptable trade-off:
@@ -52,6 +92,25 @@ The private value enters a Midnight ZK circuit. The circuit enforces the conditi
 - ♿ **Accessible** — semantic HTML, ARIA labels, keyboard navigation
 - 🧪 **18 meaningful tests** — contract simulator tests, no fake assertions
 - 🚀 **CI/CD pipeline** — GitHub Actions on every push and PR
+
+---
+
+
+## Screenshots
+### 🧪 Test Results
+
+18/18 contract tests passing, covering eligibility logic, boundary conditions, privacy invariants, custom thresholds, and witness isolation.
+
+<img width="1920" height="1080" alt="Screenshot 2026-08-19 001247" src="https://github.com/user-attachments/assets/c857c18a-cdb7-44d7-9773-411cbf506460" />
+
+### ⛓️ On-Chain Transaction
+
+The dApp successfully deployed the AgeVerify smart contract on the Midnight **Preprod** network through a real wallet transaction.
+<img width="1920" height="981" alt="Screenshot 2026-08-19 002507" src="https://github.com/user-attachments/assets/5bf5d154-0f35-4632-9d92-31924a02f10d" />
+
+![Smart Contract Deployment Transaction](<img width="1920" height="1080" alt="Screenshot 2026-08-19 001527" src="https://github.com/user-attachments/assets/19127ff9-b074-4a7f-be9f-f00fd097e8a7" />
+
+)
 
 ---
 
@@ -508,61 +567,6 @@ logic, no network. The result is clearly marked as simulator/demo in the UI.
 **Address**: `[Will be populated after deployment]`
 
 Once deployed, the contract will be visible on the Preprod block explorer.
-
----
-
-## Live Demo
-
-🔗 **Demo link**: **[warm-crostata-51c1f1.netlify.app](https://warm-crostata-51c1f1.netlify.app/)**
-<div align="center">
-
-### 🎥 1-Minute Demo Video
-
-[▶️ Watch the Demo](https://docs.google.com/videos/d/1bnoz3R2g8axL68iaJaL-rk-JVz8Y9x6C1MD3XT8sN8Y/play?usp=sharing)
-
-</div>
-
-The live demo is a fully hosted deployment of Midnight Verify. Open the link,
-connect a Midnight wallet, and try the real privacy-preserving flow.
-
-**The live demo demonstrates**:
-
-- 🔗 **Lace Wallet connection** — connects via the Midnight DApp Connector API
-- ⬡ **Midnight Preprod contract deployment** — deploys the AgeVerify contract
-  on-chain directly from the browser (wallet approval required)
-- 🔒 **Private age / 18+ threshold ZK verification** — the private age is fed to
-  the `getAge()` witness of the Compact circuit; only the boolean eligibility
-  result is proven
-- 🕶️ **Privacy-preserving verification** — the exact age never leaves the device
-  and never appears on-chain
-- ⚠️ **Self-attested trust-model limitation** — the age is user-supplied, so the
-  proof shows the *supplied* value meets the threshold, not the user's real-world
-  age (see the [Trust Model](#trust-model) disclosure)
-
-**Demo flow**:
-1. Connect I AM Wallet or Lace wallet (Preprod network)
-2. Enter private age
-3. Generate ZK proof locally
-4. Submit transaction to Preprod
-5. Receive eligibility result
-6. Exact age remains private
-
----
-
-## Screenshots
-### 🧪 Test Results
-
-18/18 contract tests passing, covering eligibility logic, boundary conditions, privacy invariants, custom thresholds, and witness isolation.
-
-![Test Results](<img width="1920" height="1080" alt="Screenshot 2026-08-19 001247" src="https://github.com/user-attachments/assets/faf64a2f-0938-4655-9edf-d82de5f9d00e" />
-)
-
-### ⛓️ On-Chain Transaction
-
-The dApp successfully deployed the AgeVerify smart contract on the Midnight **Preprod** network through a real wallet transaction.
-
-![Smart Contract Deployment Transaction](<img width="1920" height="1080" alt="Screenshot 2026-08-19 001618" src="https://github.com/user-attachments/assets/c169fc18-de69-455e-b7c9-3412a6bd4079" />
-)
 
 ---
 
