@@ -20,6 +20,8 @@ The application uses Midnight's Compact language to write a ZK circuit that enfo
 🔗 **Demo link**: **[warm-crostata-51c1f1.netlify.app](https://warm-crostata-51c1f1.netlify.app/)**
 <div align="center">
 
+## Contract Address: b23f1a6e52f5e3c02127bfb5b47e20db95ba033a708479fb55057875bf133c3e
+
 ### 🎥 1-Minute Demo Video
 
 [▶️ Watch the Demo](https://docs.google.com/videos/d/1bnoz3R2g8axL68iaJaL-rk-JVz8Y9x6C1MD3XT8sN8Y/play?usp=sharing)
