@@ -113,7 +113,7 @@ Smart Contract Deployment Transaction
 
 ### Contract Address
 
-`b23f1a6e52f5e3c02127bfb5b47e20db95ba033a708479fb55057875bf133c3e`
+`mn_addr_preprod1ywf8flurlum0pjc7xdq2cj3wn7fncwsrd2lt30dmk6uf8elsrvcqdeut37`
 
 
 ---
@@ -254,7 +254,7 @@ circuit verifyAge() {
 **Runtime**: Midnight JS 4.1.1  
 **Ledger**: 8.0.2  
 
-**Deployed Contract Address**: `b23f1a6e52f5e3c02127bfb5b47e20db95ba033a708479fb55057875bf133c3e`
+**Deployed Contract Address**: `mn_addr_preprod1ywf8flurlum0pjc7xdq2cj3wn7fncwsrd2lt30dmk6uf8elsrvcqdeut37`
 
 **Public ledger state**:
 - `threshold`: Uint<8> (e.g., 18)
@@ -569,7 +569,7 @@ back to simulated data.
 
 **Network**: Midnight Preprod  
 **Status**: Deployed  
-**Address**: `b23f1a6e52f5e3c02127bfb5b47e20db95ba033a708479fb55057875bf133c3e`
+**Address**: `mn_addr_preprod1ywf8flurlum0pjc7xdq2cj3wn7fncwsrd2lt30dmk6uf8elsrvcqdeut37`
 
 The contract was deployed to Midnight Preprod through a real wallet transaction
 and is visible on the [Preprod block explorer](https://explorer.midnight.network).

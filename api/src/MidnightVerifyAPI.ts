@@ -17,6 +17,7 @@
  */
 
 import { BehaviorSubject, type Observable } from 'rxjs';
+import { isContractAddress } from './contract-address.js';
 import {
   type AppState,
   type VerificationResult,
@@ -200,7 +201,7 @@ export class MidnightVerifyAPI {
       // localStorage unavailable — best-effort
     }
     const live = candidates.find(
-      (c) => c !== null && c.startsWith('ct_'),
+      (c) => c !== null && isContractAddress(c),
     );
     return live ?? null;
   }
@@ -215,7 +216,7 @@ export class MidnightVerifyAPI {
         txHash?: string | null;
         status?: 'idle' | 'in-progress' | 'failed' | 'confirmed';
       };
-      if (!parsed.address || !parsed.address.startsWith('ct_')) return;
+      if (!parsed.address || !isContractAddress(parsed.address)) return;
 
       const depInfo: DeploymentInfo = {
         contractAddress: parsed.address,

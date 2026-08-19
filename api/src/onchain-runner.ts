@@ -39,6 +39,7 @@
  */
 
 import type { VerificationResult, VerificationStatus } from './types.js';
+import { isContractAddress } from './contract-address.js';
 
 export interface OnChainVerificationParams {
   readonly privateAge:      bigint;
@@ -362,7 +363,7 @@ export async function runOnChainVerification(
     ? localStorage.getItem('midnight-verify-contract-address')
     : null;
 
-  const effectiveContractAddress = persistedAddress && persistedAddress.startsWith('ct_')
+  const effectiveContractAddress = persistedAddress && isContractAddress(persistedAddress)
     ? persistedAddress
     : contractAddress;
 

@@ -87,30 +87,14 @@ async function deployRealContract() {
         console.log('• Wait for confirmation (2-5 minutes)');
         console.log('• Return real contract address');
         
-        // Mock result for now
-        const mockContractAddress = 'ct_' + Array.from({ length: 40 }, () => 
-            Math.floor(Math.random() * 16).toString(16)
-        ).join('');
-        
-        const mockTxHash = '0x' + Array.from({ length: 64 }, () => 
-            Math.floor(Math.random() * 16).toString(16)
-        ).join('');
-        
-        console.log('\n📋 Deployment would create:');
-        console.log(`   • Contract Address: ${mockContractAddress}`);
-        console.log(`   • Transaction Hash: ${mockTxHash}`);
-        console.log(`   • Network: ${NETWORK}`);
-        console.log(`   • Threshold: ${THRESHOLD}+`);
-        
-        return {
-            success: true,
-            contractAddress: mockContractAddress,
-            transactionHash: mockTxHash,
-            network: NETWORK,
-            threshold: Number(THRESHOLD),
-            note: '⚠️ This is a demonstration. For REAL deployment, use the browser UI with Lace wallet.'
-        };
-        
+        // Node.js cannot sign and submit the transaction itself — deployment
+        // requires the Lace / I AM Wallet extension in the browser. Never
+        // fabricate a fake address or transaction hash.
+        throw new Error(
+            'Node.js deployment requires wallet signing. Open deploy/index.html ' +
+            'in the browser, connect your Lace / I AM Wallet (Preprod), and deploy ' +
+            'the real contract there. This script will not fabricate a result.'
+        );
     } catch (error) {
         console.error('\n❌ Deployment failed:', error.message);
         

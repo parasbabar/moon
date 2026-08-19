@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import type { AppState, DeploymentInfo, VerificationStatus } from '@midnight-verify/api';
+import { isContractAddress } from '@midnight-verify/api';
 import { useAppState } from '../hooks/useAppState';
 import styles from './DeployCard.module.css';
 
@@ -38,7 +39,7 @@ export function DeployCard({
     (deploymentStatus === 'in-progress');
 
   const isReal =
-    deploymentInfo !== null && deploymentInfo.contractAddress.startsWith('ct_');
+    deploymentInfo !== null && isContractAddress(deploymentInfo.contractAddress);
 
   const deployButtonDisabled = isReal || deploymentStatus === 'in-progress';
 
