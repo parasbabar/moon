@@ -27,8 +27,6 @@ export default function App(): React.ReactElement {
     state.verificationStatus === 'eligible' ||
     state.verificationStatus === 'not-eligible';
 
-  const isDemoMode = state.walletInfo?.network === 'simulator';
-
   return (
     <div className={styles.app}>
       {/* Background ambient effect */}
@@ -72,13 +70,14 @@ export default function App(): React.ReactElement {
         {/* Landing section — always visible */}
         <LandingSection
           walletStatus={state.walletStatus}
+          errorMessage={state.errorMessage}
           onConnect={connectWallet}
         />
 
-        {/* Contract Deployment card — shown for a real connected wallet
-            (hidden in demo mode). Stays visible after deployment to show the
-            live contract address and network. */}
-        {isConnected && !isDemoMode && (
+        {/* Contract Deployment card — shown for a real connected wallet.
+            Stays visible after deployment to show the live contract address
+            and network. */}
+        {isConnected && (
           <DeployCard
             deploymentInfo={state.deploymentInfo}
             verificationStatus={state.verificationStatus}

@@ -46,14 +46,13 @@ export interface VerificationResult {
   readonly verificationCount: bigint;
 
   /**
-   * The transaction id of the on-chain verification transaction (live path only).
-   * Null when the verification was run through the local simulator.
+   * The on-chain verification transaction id (real Preprod transaction).
+   * Null only if the wallet did not surface a transaction id.
    */
   readonly transactionHash: string | null;
 
   /**
-   * The contract address the verification was executed against (live path only).
-   * Null in simulator mode.
+   * The contract address the verification was executed against.
    */
   readonly contractAddress: string | null;
 

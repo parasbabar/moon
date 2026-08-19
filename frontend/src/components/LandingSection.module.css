@@ -214,6 +214,27 @@
   flex-shrink: 0;
 }
 
+/* ---- Connection error notice ---- */
+.connectError {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--danger);
+  background: var(--danger-dim);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  border-radius: var(--radius-lg);
+  padding: 10px 16px;
+  max-width: 460px;
+  text-align: left;
+  line-height: 1.5;
+}
+
+.connectErrorIcon {
+  flex-shrink: 0;
+  font-style: normal;
+}
+
 /* ---- Privacy statement ---- */
 .privacyStatement {
   font-size: 0.83rem;

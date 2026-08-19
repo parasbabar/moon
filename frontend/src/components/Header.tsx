@@ -78,7 +78,13 @@ export function Header({
           ) : (
             <button
               className={styles.connectBtn}
-              onClick={onConnect}
+              onClick={() => {
+                try {
+                  void onConnect();
+                } catch {
+                  // Connection errors are surfaced in the landing section.
+                }
+              }}
               disabled={isConnecting}
               aria-busy={isConnecting}
               aria-label={isConnecting ? 'Connecting wallet…' : 'Connect Midnight wallet'}

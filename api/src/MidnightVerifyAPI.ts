@@ -3,17 +3,14 @@
  *
  * Bridges the frontend and the Midnight contract/circuit layer.
  *
- * Supports two runtime modes:
+ * Every wallet, deployment, and verification state is real and on-chain:
+ *   Frontend → Midnight wallet (Lace / I AM Wallet) → Preprod contract → real on-chain result
  *
- * MODE A — Live Preprod (VITE_CONTRACT_ADDRESS is set + Lace wallet connected)
- *   Frontend → Lace wallet → proof server → Preprod contract → real on-chain result
+ * The API never simulates a wallet connection, a contract deployment, or a
+ * verification result. Each state is driven by the actual Midnight wallet and
+ * the actual configured/deployed Preprod contract.
  *
- * MODE B — Simulator (no contract address, or wallet not available)
- *   Frontend → local Contract simulator (same compiled code, no network needed)
- *   The circuit logic is still enforced by the same compactc-compiled Contract class.
- *   This mode is used for demos/testing without a live node.
- *
- * PRIVACY CONTRACT (enforced in both modes):
+ * PRIVACY CONTRACT:
  *   - privateAge is passed to the witness only
  *   - privateAge is NEVER stored, logged, or returned
  *   - The API only surfaces the boolean eligibility result
@@ -95,7 +92,7 @@ export class MidnightVerifyAPI {
         const rawAddress = walletState?.coinPublicKeyString?.() ?? '';
         const displayAddress = rawAddress.length > 12
           ? `${rawAddress.slice(0, 8)}…${rawAddress.slice(-6)}`
-          : rawAddress || '(connected)';
+          : rawAddress || 'Connected';
 
         // Best-effort balance fetch (NIGHT has 6 decimals, DUST has 15).
         let nightBalance: bigint | null = null;
@@ -125,7 +122,7 @@ export class MidnightVerifyAPI {
           errorMessage: null,
         });
 
-        // If a contract address is configured, record deployment info
+        // If a contract address is configured, record the live deployment info
         if (CONTRACT_ADDRESS_ENV) {
           const depInfo: DeploymentInfo = {
             contractAddress: CONTRACT_ADDRESS_ENV,
@@ -133,34 +130,16 @@ export class MidnightVerifyAPI {
             threshold:       DEFAULT_THRESHOLD,
           };
           this.deploymentInfo = depInfo;
-          this.updateState({ deploymentInfo: depInfo });
+          this.updateState({ deploymentInfo: depInfo, deploymentStatus: 'confirmed' });
         }
 
       } else {
-        // Lace not installed — fall back to demo mode
-        await this.delay(600);
-        this.updateState({
-          walletStatus: 'connected',
-          walletInfo: {
-            displayAddress: 'Demo Mode',
-            fullAddress:    'demo',
-            network:        'simulator',
-            nightBalance:   null,
-            dustBalance:    null,
-            dustCap:        null,
-          },
-          errorMessage: null,
-          deploymentInfo: {
-            contractAddress: 'simulator',
-            network:         'simulator',
-            threshold:       DEFAULT_THRESHOLD,
-          },
-        });
-        this.deploymentInfo = {
-          contractAddress: 'simulator',
-          network:         'simulator',
-          threshold:       DEFAULT_THRESHOLD,
-        };
+        // No Midnight wallet detected — report the real state instead of
+        // simulating a connection. The catch below surfaces the message.
+        throw new Error(
+          'Midnight wallet not detected. Install and enable the Lace or I AM ' +
+          'Wallet extension, then try again.',
+        );
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Wallet connection failed';
@@ -211,9 +190,7 @@ export class MidnightVerifyAPI {
    */
   private getEffectiveContractAddress(): string | null {
     const candidates: (string | null)[] = [
-      CONTRACT_ADDRESS_ENV && CONTRACT_ADDRESS_ENV !== 'simulator'
-        ? CONTRACT_ADDRESS_ENV
-        : null,
+      CONTRACT_ADDRESS_ENV ? CONTRACT_ADDRESS_ENV : null,
       this.deploymentInfo?.contractAddress ?? null,
     ];
     try {
@@ -256,17 +233,6 @@ export class MidnightVerifyAPI {
     }
   }
 
-  async deployOrConnect(contractAddress?: string): Promise<DeploymentInfo> {
-    const address = contractAddress ?? CONTRACT_ADDRESS_ENV ?? 'simulator';
-    this.deploymentInfo = {
-      contractAddress: address,
-      network: this.currentState.walletInfo?.network ?? 'preprod',
-      threshold: DEFAULT_THRESHOLD,
-    };
-    this.updateState({ deploymentInfo: this.deploymentInfo });
-    return this.deploymentInfo;
-  }
-
   /**
    * Deploy the AgeVerify contract through the connected Midnight wallet.
    *
@@ -278,8 +244,6 @@ export class MidnightVerifyAPI {
    * are handled automatically by the wallet.
    *
    * This triggers a real on-chain transaction via the I AM Wallet / Lace wallet.
-   * It does NOT bypass localStorage — that bypass only happens when called from
-   * verifyEligibility's live contract path.
    */
   async deployContract(initialAge: bigint = DEFAULT_THRESHOLD): Promise<DeploymentInfo> {
     if (!this.laceApi) {
@@ -345,13 +309,13 @@ export class MidnightVerifyAPI {
   // ── Verification ─────────────────────────────────────────────────────────
 
   /**
-   * Verify eligibility.
+   * Verify eligibility on-chain.
    *
-   * If a real deployed contract address is configured AND Lace wallet is connected,
-   * submits a real transaction to Preprod via the Lace wallet.
-   *
-   * Otherwise, runs the local circuit simulator (same compiled Contract class,
-   * ZK logic enforced, no network required).
+   * Requires a connected Midnight wallet AND a deployed contract address
+   * (build-time VITE_CONTRACT_ADDRESS, this session's deployment, or a
+   * previously deployed address persisted in localStorage). Submits a real
+   * verifyAge transaction to Midnight Preprod via the wallet and returns the
+   * real on-chain result.
    *
    * PRIVACY: privateAge never leaves this call or appears in the result.
    */
@@ -372,17 +336,24 @@ export class MidnightVerifyAPI {
       errorMessage:       null,
     });
     try {
-      // A live contract is one that was deployed (build-time env, this session,
-      // or persisted in localStorage) AND a real Midnight wallet is connected.
-      const effectiveAddress = this.getEffectiveContractAddress();
-      const hasLiveContract =
-        effectiveAddress !== null && this.laceApi !== null;
-
-      if (hasLiveContract) {
-        return await this.verifyOnChain(privateAge, threshold, effectiveAddress!);
-      } else {
-        return await this.verifySimulator(privateAge, threshold);
+      if (this.laceApi === null) {
+        throw new VerificationError(
+          'Connect your Midnight wallet before verifying eligibility.',
+          'UNKNOWN',
+        );
       }
+
+      // A contract must be configured (build-time env), deployed in this
+      // session, or persisted in localStorage from a previous session.
+      const effectiveAddress = this.getEffectiveContractAddress();
+      if (effectiveAddress === null) {
+        throw new VerificationError(
+          'No AgeVerify contract is deployed. Deploy a contract first, then verify.',
+          'CONTRACT_ERROR',
+        );
+      }
+
+      return await this.verifyOnChain(privateAge, threshold, effectiveAddress);
     } catch (err) {
       if (err instanceof VerificationError) {
         this.updateState({ verificationStatus: 'error', errorMessage: err.message, isVerifying: false });
@@ -436,40 +407,6 @@ export class MidnightVerifyAPI {
     return result;
   }
 
-  // ── Simulator path ─────────────────────────────────────────────────────────
-
-  private async verifySimulator(
-    privateAge: bigint,
-    threshold:  bigint,
-  ): Promise<VerificationResult> {
-    await this.delay(1000);
-    this.updateState({ verificationStatus: 'submitting' });
-
-    const { runCircuitSimulator } = await import('./circuit-runner.js');
-    const circuitResult = await runCircuitSimulator(privateAge, threshold);
-
-await this.delay(600);
-    this.updateState({ verificationStatus: 'awaiting-confirmation' });
-    await this.delay(400);
-
-    const result: VerificationResult = {
-      eligible:          circuitResult.eligible,
-      threshold:         circuitResult.threshold,
-      verificationCount: circuitResult.verificationCount,
-      transactionHash:   null,
-      contractAddress:   null,
-    };
-
-    this.updateState({
-      verificationStatus: circuitResult.eligible ? 'eligible' : 'not-eligible',
-      verificationResult: result,
-      errorMessage:       null,
-      isVerifying:        false,
-    });
-
-    return result;
-  }
-
   resetVerification(): void {
     this.updateState({
       verificationStatus: 'idle',
@@ -480,10 +417,6 @@ await this.delay(600);
 
   private updateState(partial: Partial<AppState>): void {
     this._state$.next({ ...this._state$.getValue(), ...partial });
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise((r) => setTimeout(r, ms));
   }
 
   private updateDeploymentStatus(status: 'idle' | 'in-progress' | 'failed' | 'confirmed'): void {
