@@ -131,7 +131,7 @@ export class MidnightVerifyAPI {
             threshold:       DEFAULT_THRESHOLD,
           };
           this.deploymentInfo = depInfo;
-          this.updateState({ deploymentInfo: depInfo, deploymentStatus: 'confirmed' });
+          this.updateState({ deploymentInfo: depInfo });
         }
 
       } else {

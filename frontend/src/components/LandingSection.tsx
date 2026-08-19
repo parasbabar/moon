@@ -4,18 +4,15 @@ import styles from './LandingSection.module.css';
 
 interface LandingSectionProps {
   walletStatus: WalletStatus;
-  errorMessage: string | null;
   onConnect: () => void;
 }
 
 export function LandingSection({
   walletStatus,
-  errorMessage,
   onConnect,
 }: LandingSectionProps): React.ReactElement {
   const isConnected = walletStatus === 'connected';
   const isConnecting = walletStatus === 'connecting';
-  const isError = walletStatus === 'error';
 
   return (
     <section className={styles.section} aria-labelledby="landing-heading">
@@ -54,13 +51,7 @@ export function LandingSection({
       {!isConnected && (
         <button
           className={styles.connectCta}
-          onClick={() => {
-            try {
-              void onConnect();
-            } catch {
-              // Connection errors are surfaced via the error state below.
-            }
-          }}
+          onClick={onConnect}
           disabled={isConnecting}
           aria-busy={isConnecting}
           aria-label={isConnecting ? 'Connecting wallet…' : 'Connect your Midnight wallet to begin'}
@@ -77,13 +68,6 @@ export function LandingSection({
             </>
           )}
         </button>
-      )}
-
-      {isError && errorMessage && (
-        <div className={styles.connectError} role="alert">
-          <span className={styles.connectErrorIcon} aria-hidden="true">⚠</span>
-          {errorMessage}
-        </div>
       )}
 
       {isConnected && (

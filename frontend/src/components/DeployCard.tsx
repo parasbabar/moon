@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react';
 import type { AppState, DeploymentInfo, VerificationStatus } from '@midnight-verify/api';
-import { isContractAddress } from '@midnight-verify/api';
 import { useAppState } from '../hooks/useAppState';
 import styles from './DeployCard.module.css';
 
@@ -38,11 +37,6 @@ export function DeployCard({
     deploying &&
     (deploymentStatus === 'in-progress');
 
-  const isReal =
-    deploymentInfo !== null && isContractAddress(deploymentInfo.contractAddress);
-
-  const deployButtonDisabled = isReal || deploymentStatus === 'in-progress';
-
   const handleDeploy = useCallback(async () => {
     setDeploying(true);
     try {
@@ -62,31 +56,7 @@ export function DeployCard({
           CONTRACT DEPLOYMENT
         </span>
       </div>
-
-      {isReal ? (
-        <div className={styles.deployed}>
-          <div className={styles.infoRow}>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Network</span>
-              <span className={styles.infoValueNetwork}>{deploymentInfo!.network}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Threshold</span>
-              <span className={styles.infoValue}>{deploymentInfo!.threshold.toString()}+</span>
-            </div>
-          </div>
-
-          <div className={styles.addressBlock}>
-            <span className={styles.addressLabel}>Contract address</span>
-            <code className={styles.address}>{deploymentInfo!.contractAddress}</code>
-            <p className={styles.note}>
-              This contract is live on-chain. Verify eligibility below — the result is a
-              public ZK proof, your age stays private.
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className={styles.undeployed}>
+      <div className={styles.undeployed}>
           <p className={styles.intro}>
             No AgeVerify contract is deployed yet. Deploy one to the Midnight{' '}
             <strong>preprod</strong> network through your wallet. This submits a real
@@ -125,7 +95,6 @@ export function DeployCard({
             saved on this device and used for all future verifications.
           </p>
         </div>
-      )}
     </section>
   );
 }

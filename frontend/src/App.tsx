@@ -70,7 +70,6 @@ export default function App(): React.ReactElement {
         {/* Landing section — always visible */}
         <LandingSection
           walletStatus={state.walletStatus}
-          errorMessage={state.errorMessage}
           onConnect={connectWallet}
         />
 
