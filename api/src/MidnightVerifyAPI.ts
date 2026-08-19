@@ -355,7 +355,11 @@ export class MidnightVerifyAPI {
         this.updateState({ verificationStatus: 'error', errorMessage: err.message, isVerifying: false });
         throw err;
       }
-      const message = 'Verification could not be completed. Please check your wallet connection and try again.';
+      // Surface the REAL underlying error instead of masking it behind a generic
+      // "wallet connection" message, so the failing verification stage is visible.
+      const detail = err instanceof Error ? err.message : String(err);
+      console.error('[VERIFY] verifyEligibility failed:', err);
+      const message = `Verification could not be completed: ${detail}`;
       this.updateState({ verificationStatus: 'error', errorMessage: message, isVerifying: false });
       throw new VerificationError(message, 'UNKNOWN');
     }

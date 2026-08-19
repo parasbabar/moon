@@ -39,7 +39,6 @@
  */
 
 import type { VerificationResult, VerificationStatus } from './types.js';
-import { isContractAddress } from './contract-address.js';
 
 export interface OnChainVerificationParams {
   readonly privateAge:      bigint;
@@ -93,7 +92,10 @@ function withTimeout<Ms>(promise: Promise<Ms>, ms: number, label: string): Promi
     new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error(`Timeout after ${ms}ms — stage: ${label}`)), ms);
     }),
-  ]);
+  ]).catch((err) => {
+    console.error(`[VERIFY] Stage '${label}' failed:`, err);
+    throw err;
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -169,39 +171,6 @@ function getCachedZkConfigProvider(baseUrl: string): ReturnType<typeof buildFetc
 }
 
 // ---------------------------------------------------------------------------
-// Cached proving provider — initialized once when wallet connects, reused
-// across all subsequent verifications. The wallet's getProvingProvider()
-// returns a provider that is safe to reuse for multiple prove calls as long
-// as the underlying wallet connection remains active.
-// ---------------------------------------------------------------------------
-class CachedProvingProvider {
-  private provider: MidnightProvingProvider | null = null;
-  private initialized = false;
-
-  async getProvider(wallet: MidnightConnectedAPI, kmp: unknown): Promise<MidnightProvingProvider> {
-    if (!this.initialized) {
-      // tslint:disable-next-line: no-floating-promises
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      (async () => {
-        try {
-          this.provider = await wallet.getProvingProvider(kmp);
-          this.initialized = true;
-        } catch {
-          // Initialization failed; will retry on next call.
-        }
-      })();
-    }
-    if (this.provider) {
-      return this.provider;
-    }
-    // Fallthrough: re-attempt initialization
-    this.provider = await wallet.getProvingProvider(kmp);
-    this.initialized = true;
-    return this.provider;
-  }
-}
-
-// ---------------------------------------------------------------------------
 // runOnChainVerification
 // ---------------------------------------------------------------------------
 export async function runOnChainVerification(
@@ -217,49 +186,49 @@ export async function runOnChainVerification(
   const markers: { [key: string]: number } = {};
   const log = (stage: string) => {
     markers[stage] = performance.now();
-    // In production, could emit to console or RAI; here we just track.
-    // if (typeof window !== 'undefined') {
-    //   console.log(`[VERIFY] ${stage} started at ${markers[stage]}ms`);
-    // }
+    if (typeof window !== 'undefined') {
+      console.log(`[VERIFY] ${stage} started`);
+    }
   };
   const markEnd = (stage: string) => {
     const start = markers[stage];
     if (start !== undefined) {
-      // const duration = performance.now() - start;
-      // if (typeof window !== 'undefined') {
-      //   console.log(`[VERIFY] ${stage} completed in ${duration.toFixed(0)}ms`);
-      // }
+      const duration = performance.now() - start;
+      if (typeof window !== 'undefined') {
+        console.log(`[VERIFY] ${stage} completed in ${duration.toFixed(0)}ms`);
+      }
     }
   };
 
   log('init-start');
 
   // Dynamic imports — loaded only when the live contract path is taken
-  const [
-    { findDeployedContract },
-    { indexerPublicDataProvider },
-    { levelPrivateStateProvider },
-    { setNetworkId },
-    { Transaction },
-    { createProofProvider: mkProofProvider },
-    { Contract },
-    { createWitnessProvider, createPrivateState },
-    compiledContractMod,
-    effectMod,
-    { ledger },
-  ] = await Promise.all([
-    import('@midnight-ntwrk/midnight-js-contracts'),
-    import('@midnight-ntwrk/midnight-js-indexer-public-data-provider'),
-    import('@midnight-ntwrk/midnight-js-level-private-state-provider'),
-    import('@midnight-ntwrk/midnight-js-network-id'),
-    import('@midnight-ntwrk/ledger-v8'),
-    import('@midnight-ntwrk/midnight-js-types'),
-    import('@midnight-verify/contract'),
-    import('@midnight-verify/contract'),
-    import('@midnight-ntwrk/compact-js/effect/CompiledContract'),
-    import('effect'),
-    import('@midnight-verify/contract'),
-  ]);
+  try {
+    const [
+      { findDeployedContract },
+      { indexerPublicDataProvider },
+      { levelPrivateStateProvider },
+      { setNetworkId },
+      { Transaction },
+      { createProofProvider: mkProofProvider },
+      { Contract },
+      { createWitnessProvider, createPrivateState },
+      compiledContractMod,
+      effectMod,
+      { ledger },
+    ] = await Promise.all([
+      import('@midnight-ntwrk/midnight-js-contracts'),
+      import('@midnight-ntwrk/midnight-js-indexer-public-data-provider'),
+      import('@midnight-ntwrk/midnight-js-level-private-state-provider'),
+      import('@midnight-ntwrk/midnight-js-network-id'),
+      import('@midnight-ntwrk/ledger-v8'),
+      import('@midnight-ntwrk/midnight-js-types'),
+      import('@midnight-verify/contract'),
+      import('@midnight-verify/contract'),
+      import('@midnight-ntwrk/compact-js/effect/CompiledContract'),
+      import('effect'),
+      import('@midnight-verify/contract'),
+    ]);
 
   // ── Step 1: resolve the wallet's network + service configuration ───────────
   log('get-configuration-start');
@@ -288,9 +257,12 @@ export async function runOnChainVerification(
   markEnd('build-zk-config-start');
 
   log('get-proving-provider-start');
-  const provingCache = new CachedProvingProvider();
-  const walletPP  = await withTimeout(
-    provingCache.getProvider(wallet, zkConfigProvider as never),
+  // Request the proving provider exactly once per verification — the same
+  // single-call pattern used by the (working) deployment path. Requesting it
+  // concurrently (as the previous cached wrapper did) can break the wallet's
+  // DApp Connector initialization.
+  const walletPP = await withTimeout(
+    wallet.getProvingProvider(zkConfigProvider as never),
     60000,
     'get-proving-provider'
   );
@@ -355,17 +327,14 @@ export async function runOnChainVerification(
   );
   markEnd('build-private-state-start');
 
-  // ── Step 6: connect to deployed contract (cached address) ──────────────────
-  // Use the persisted contract address from localStorage if available,
-  // otherwise discover it via findDeployedContract. This avoids the 30s
-  // contract discovery on every verification when a contract is already deployed.
-  const persistedAddress = typeof localStorage !== 'undefined'
-    ? localStorage.getItem('midnight-verify-contract-address')
-    : null;
-
-  const effectiveContractAddress = persistedAddress && isContractAddress(persistedAddress)
-    ? persistedAddress
-    : contractAddress;
+  // ── Step 6: connect to deployed contract ──────────────────────────────────
+  // The caller (MidnightVerifyAPI.getEffectiveContractAddress) has already
+  // resolved the authoritative address (build-time VITE_CONTRACT_ADDRESS →
+  // this session's deployment → a persisted real deployment). Always use that
+  // address — do NOT re-read localStorage here: a stale entry from an older
+  // session must not override the resolved address and cause verification to
+  // target a wrong/stale contract.
+  const effectiveContractAddress = contractAddress;
 
   log('find-deployed-contract-start');
   const deployed = await withTimeout(
@@ -425,4 +394,8 @@ export async function runOnChainVerification(
   markEnd('read-ledger-start');
 
   return result;
+  } catch (err) {
+    console.error('[VERIFY] runOnChainVerification failed:', err);
+    throw err;
+  }
 }
