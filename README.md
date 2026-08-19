@@ -108,9 +108,10 @@ The private value enters a Midnight ZK circuit. The circuit enforces the conditi
 The dApp successfully deployed the AgeVerify smart contract on the Midnight **Preprod** network through a real wallet transaction.
 <img width="1920" height="981" alt="Screenshot 2026-08-19 002507" src="https://github.com/user-attachments/assets/5bf5d154-0f35-4632-9d92-31924a02f10d" />
 
-![Smart Contract Deployment Transaction](<img width="1920" height="1080" alt="Screenshot 2026-08-19 001527" src="https://github.com/user-attachments/assets/19127ff9-b074-4a7f-be9f-f00fd097e8a7" />
+Smart Contract Deployment Transaction
+<img width="1920" height="1080" alt="Screenshot 2026-08-19 001527" src="https://github.com/user-attachments/assets/d3c3386d-dd75-44e0-932e-4c1fc73e0039" />
 
-)
+
 
 ---
 
