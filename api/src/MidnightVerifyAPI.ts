@@ -123,7 +123,9 @@ export class MidnightVerifyAPI {
           errorMessage: null,
         });
 
-        // If a contract address is configured, record the live deployment info
+        // If a real contract address is configured, record the live deployment
+        // info so the deploy card shows the deployed contract and the status
+        // bar reflects that the contract is ready for verification.
         if (CONTRACT_ADDRESS_ENV) {
           const depInfo: DeploymentInfo = {
             contractAddress: CONTRACT_ADDRESS_ENV,
@@ -131,7 +133,10 @@ export class MidnightVerifyAPI {
             threshold:       DEFAULT_THRESHOLD,
           };
           this.deploymentInfo = depInfo;
-          this.updateState({ deploymentInfo: depInfo });
+          this.updateState({
+            deploymentInfo:   depInfo,
+            deploymentStatus: 'confirmed',
+          });
         }
 
       } else {
