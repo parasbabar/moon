@@ -39,6 +39,7 @@
  */
 
 import type { VerificationResult, VerificationStatus } from './types.js';
+import { MidnightBech32m } from '@midnight-ntwrk/wallet-sdk-address-format';
 
 export interface OnChainVerificationParams {
   readonly privateAge:      bigint;
@@ -115,6 +116,32 @@ function fromHex(hex: string): Uint8Array {
     bytes[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16);
   }
   return bytes;
+}
+
+// ---------------------------------------------------------------------------
+// Contract address normalization
+//
+// The SDK's ContractAddress type (midnight-js-contracts v4 / midnight-js-utils
+// assertIsContractAddress) is a plain 64-char hex string (32 bytes). The
+// user-facing address format used by Midnight Explorer / the deploy tooling is
+// a bech32m string such as "mn_addr_preprod1ywf8...". The bech32m form must be
+// decoded to its raw bytes and hex-encoded before it can be passed to
+// findDeployedContract() — it must never be fed to a hex decoder directly.
+// The decoder is the official wallet-sdk-address-format package.
+// ---------------------------------------------------------------------------
+function toHexContractAddress(address: string): string {
+  const trimmed = address.trim();
+  // Already in the SDK's native 64-char hex form — use as-is.
+  if (/^[0-9a-fA-F]{64}$/.test(trimmed)) {
+    return trimmed.toLowerCase();
+  }
+  // Bech32m Midnight contract address (mn_addr_preprod1..., mn_addr1...) —
+  // decode via the official Midnight SDK and hex-encode the 32 raw bytes.
+  if (/^mn_[a-z0-9]+/.test(trimmed)) {
+    const decoded = MidnightBech32m.parse(trimmed);
+    return toHex(decoded.data);
+  }
+  return trimmed;
 }
 
 // ---------------------------------------------------------------------------
@@ -334,7 +361,12 @@ export async function runOnChainVerification(
   // address — do NOT re-read localStorage here: a stale entry from an older
   // session must not override the resolved address and cause verification to
   // target a wrong/stale contract.
-  const effectiveContractAddress = contractAddress;
+  //
+  // The SDK requires the 64-hex ContractAddress form, so a bech32m
+  // "mn_addr_preprod1..." address is converted to hex here. The original
+  // user-facing address is preserved for the returned result/display.
+  const originalAddress = contractAddress;
+  const effectiveContractAddress = toHexContractAddress(contractAddress);
 
   log('find-deployed-contract-start');
   const deployed = await withTimeout(
@@ -388,7 +420,7 @@ export async function runOnChainVerification(
     threshold:         updatedLedger.threshold,
     verificationCount: updatedLedger.verificationCount,
     transactionHash:   verificationTxHash,
-    contractAddress:   effectiveContractAddress,
+    contractAddress:   originalAddress,
   };
 
   markEnd('read-ledger-start');

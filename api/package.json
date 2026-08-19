@@ -20,6 +20,7 @@
     "@midnight-ntwrk/midnight-js-level-private-state-provider": "4.1.1",
     "@midnight-ntwrk/midnight-js-network-id": "4.1.1",
     "@midnight-ntwrk/midnight-js-types": "4.1.1",
+    "@midnight-ntwrk/wallet-sdk-address-format": "3.1.2",
     "@midnight-verify/contract": "1.0.0",
     "effect": "^3.22.1",
     "rxjs": "^7.8.2"
