@@ -123,21 +123,11 @@ export class MidnightVerifyAPI {
           errorMessage: null,
         });
 
-        // If a real contract address is configured, record the live deployment
-        // info so the deploy card shows the deployed contract and the status
-        // bar reflects that the contract is ready for verification.
-        if (CONTRACT_ADDRESS_ENV) {
-          const depInfo: DeploymentInfo = {
-            contractAddress: CONTRACT_ADDRESS_ENV,
-            network:         networkId,
-            threshold:       DEFAULT_THRESHOLD,
-          };
-          this.deploymentInfo = depInfo;
-          this.updateState({
-            deploymentInfo:   depInfo,
-            deploymentStatus: 'confirmed',
-          });
-        }
+        // NOTE: a configured VITE_CONTRACT_ADDRESS is a known/verified address
+        // used by the verification path (getEffectiveContractAddress). It is
+        // intentionally NOT recorded as deployment state here — the deployed
+        // card should only reflect a contract the user actually deployed in
+        // this session (or a real deployment restored from localStorage).
 
       } else {
         // No Midnight wallet detected — report the real state instead of
