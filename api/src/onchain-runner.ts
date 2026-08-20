@@ -394,7 +394,23 @@ export async function runOnChainVerification(
     deployed.callTx.verifyAge(),
     60000,
     'call-tx-verify-age'
-  );
+  ).catch((err) => {
+    // Capture and log the FULL underlying error + stack trace. The SDK wraps
+    // scoped-transaction failures as "Unexpected error executing scoped
+    // transaction '<name>': ..." and attaches the real cause via `cause`, so
+    // walk the whole chain to expose the exact failing argument/call.
+    let depth = 0;
+    let current: unknown = err;
+    while (current instanceof Error && depth < 6) {
+      console.error(`[VERIFY] call-tx-verify-age (cause depth ${depth}):`, current.message);
+      if (current.stack) {
+        console.error(`[VERIFY] call-tx-verify-age (cause depth ${depth}) stack:`, current.stack);
+      }
+      current = current.cause;
+      depth++;
+    }
+    throw err;
+  });
   markEnd('call-tx-verify-age-start');
   onStatus('awaiting-confirmation');
 
